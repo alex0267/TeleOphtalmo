@@ -1,6 +1,7 @@
 # Load and pre-process AWS data
 
 This repository includes code to :
+- download and install the AWS SDK to interact with the AWS project through CLI (command line interface)
 - load eye pictures from an AWS bucket to an AWS SageMaker notebook.
 - preprocess eye photos (crop + Gaussian blur).
 
