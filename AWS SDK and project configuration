@@ -1,0 +1,14 @@
+""" Download AWS SDK """
+$ curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+$ unzip awscli-bundle.zip
+$ sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+""" Configure project """
+$ aws configure
+AWS Access Key ID [None]: 
+AWS Secret Access Key [None]: 
+Default region name [None]: 
+Default output format [None]: 
+
+""" Upload file from local directory to S3 bucket """
+$ aws s3 cp FILE_NAME s3://BUCKET_NAME
