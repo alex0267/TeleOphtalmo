@@ -1,7 +1,7 @@
 # Load and pre-process AWS data
 
 This repository includes code to :
-- load eye pictures from an aws bucket to a sage maker notebook.
+- load eye pictures from an AWS bucket to an AWS SageMaker notebook.
 - preprocess eye photos (crop + Gaussian blur).
 
 The  goal is to develope a workflow for pre-processing eye pictures for an image classification model developped with transfer learning.
