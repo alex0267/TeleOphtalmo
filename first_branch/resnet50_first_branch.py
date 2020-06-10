@@ -9,7 +9,7 @@ Original file is located at
 
 # Mount your notebook on your gdrive
 # After running the cell follow the instruction and past the key
-# this is a test to commit from VSCode
+# this is a test to commit from VSCod
 from google.colab import drive
 drive.mount('/content/gdrive')
 
