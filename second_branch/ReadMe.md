@@ -4,9 +4,9 @@
 The 2nd branch aims at capturing glaucoma specific features with a Resnet50 model, by cropping images, and by forcing the model to focus on the region of interest : the optic disk. In order to crop the images automatically, we train a Mask-RCNN to recognize the optic disks.
 The 2nd branch process has three steps:
 1. Pre-processing for the Mask R-CNN : the IDRID dataset initially comes with 2 folders : train and test datasets. We combine all the images into one folder. 3 images of really damaged eyes are excluded from this union. After combining all the images, we do an horizontal flip on each image and save the flip in another folder with the suffix "-flip". This pre-processing step in the notebook flip_image_idrid.ipynb.
-2. Optic disk selection : we train a Mask-RCNN to recognize optic disks using our augmented Idrid dataset, and we then use the trained model to isolate the optic disks in the ORIGA dataset (SANAS + GLAUCOMA). The optic disk selection training step is in the notebook train_Mask_RCNN_optic_disc.ipynb. The optic selection step is in the notebook ???.
+2. Optic disk selection : we train a Mask-RCNN to recognize optic disks using our augmented Idrid dataset, and we then use the trained model to isolate the optic disks with bouding-boxes in the ORIGA dataset (SANAS + GLAUCOMA). The optic disk selection training step and the optic disk selection step are in the notebook train_Mask_RCNN_optic_disc.ipynb.
 3. Classification : we use the same methodology as the first branch to train a Resnet50 model to classify between healthy and glaucoma on the cropped ORIGA dataset.
-The classification step in the notebook ???.
+The classification step in the notebook ResNet50_Second_Branch.ipynb.
 
 ## Data set used
 Two datasets are used:
