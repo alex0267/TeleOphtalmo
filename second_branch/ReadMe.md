@@ -8,12 +8,12 @@ The 2nd branch process has three steps:
 3. Classification : we use the same methodology as the first branch to train a Resnet50 model to classify between healthy and glaucoma on the cropped ORIGA dataset.
 The classification step in the notebook ResNet50_Second_Branch.ipynb.
 
-## Data set used
+## Datasets 
 Two datasets are used:
 1. Optic disk selection : the IDRID dataset which includes 81 funds images and their respective masks. This dataset is doubled in size by applying a horizontal flip on the pictures and their respective masks.
 2. Classification : The ORIGA dataset which includes 168 fundus images of eyes presenting a glaucoma, and 482 fundus images of healthy eyes.
 
-## Model & Training methods
+## Models
 1. Optic disk selection : pretained Mask-RCNN model on COCO dataset. Link here : 
 2. Classification : Resnet50 with pretrained weight obtained from the Fast.ai library. In the notebook 3 different training techniques are used: 
 - freezing all layers, 
