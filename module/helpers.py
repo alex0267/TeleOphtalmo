@@ -1,14 +1,14 @@
 import os
+import re
 from typing import Any
 
 import cv2
 import numpy as np
 import pandas as pd
 from fastai.vision import MetricsList, Recorder, open_image
+from imgaug import augmenters as iaa
 from mrcnn import utils
 from skimage.io import imread
-import re
-from imgaug import augmenters as iaa
 
 
 class SaveBestModel(Recorder):
@@ -226,9 +226,7 @@ def sorted_alphanumeric(data):
 # path folder for testing images
 def create_cropped_image(model, input_path, name_path, output_path, shape):
     # Image augmentation (light but constant)
-    aug_detect = iaa.Sequential([
-        iaa.CLAHE()
-    ])
+    aug_detect = iaa.Sequential([iaa.CLAHE()])
 
     path = input_path
     images = sorted_alphanumeric(os.listdir(path))
@@ -273,7 +271,7 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
 
 
 def mrcnn_iou_eval(model, anns):
-    '''
+    """
     Evaluation of the roi and masks provided by the mrcnn model
 
     model: the model we want to evaluate
@@ -281,27 +279,25 @@ def mrcnn_iou_eval(model, anns):
 
     The output is:
     list_iou: a list of iou values
-    '''
+    """
 
     list_iou = []
     for idx in range(len(anns)):
-        path = anns.loc[idx, 'Path']
+        path = anns.loc[idx, "Path"]
         img = imread(path)
         img_detect = img.copy()
         results = model.detect([img_detect], verbose=1)
-        r =  results[0]
 
-        mask_disc_org = cv2.imread(anns.loc[idx, 'Paths_mask'])
+        mask_disc_org = cv2.imread(anns.loc[idx, "Paths_mask"])
         mask_disc_org = np.where(mask_disc_org > 0, 1, 0)
 
-        target = mask_disc_org[:,:,2]
-        prediction = results[0]['masks'][:,:,0]
+        target = mask_disc_org[:, :, 2]
+        prediction = results[0]["masks"][:, :, 0]
 
         intersection = np.logical_and(target, prediction)
         union = np.logical_or(target, prediction)
         iou_score = np.sum(intersection) / np.sum(union)
 
         list_iou.append(iou_score)
-
 
     return list_iou

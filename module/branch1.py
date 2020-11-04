@@ -10,11 +10,14 @@ from fastai.vision import (
 from .helpers import SaveBestModel, fmod
 import os
 
+
 freeze_type = {
     "FULLY_UNFROZEN": 0,
     "FULLY_FROZEN": 1,
     "FREEZE_TO": 2,
 }
+
+
 @dataclass
 class FreezeConfig:
     """
@@ -37,7 +40,6 @@ class Config:
     INFERENCE_DATA_PATH_ROOT: str = ""
     IS_INFERENCE: bool = False
     MODEL_PATH: str = ""
-
 
 
 class Model:
