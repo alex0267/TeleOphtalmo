@@ -179,8 +179,7 @@ class Model:
 
 if __name__ == "__main__":
     # Train
-
-    DATA_DIR = DATA_DIR = "Second_branch/data_train_mrcnn/"
+    DATA_DIR = "Second_branch/data_train_mrcnn/"
     config = Config(
         IS_INFERENCE=False,
         USE_GPU=True,
