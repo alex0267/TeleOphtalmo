@@ -5,31 +5,76 @@ from fastai.vision import (
     ImageDataBunch, Path, get_transforms,
     imagenet_stats, cnn_learner, accuracy,
     models, ClassificationInterpretation,
-    open_image
+    open_image, load_learner
 )
 from .helpers import SaveBestModel, fmod
+import os
+
+freeze_type = {
+    "FULLY_UNFROZEN": 0,
+    "FULLY_FROZEN": 1,
+    "FREEZE_TO": 2,
+}
+@dataclass
+class FreezeConfig:
+    """
+    Params
+    ------
+    FREEZE_TYPE:
+      0. fully unfrozen
+      1. fully frozen
+      2. use freeze to
+    FREEZE_TO: layers to freeze up to
+    """
+    FREEZE_TYPE: int = freeze_type["FULLY_UNFROZEN"]
+    FREEZE_TO: int = -2
 
 
 @dataclass
 class Config:
-    PATH_ROOT: str
+    freeze: FreezeConfig = FreezeConfig()
+    TRAIN_DATA_PATH_ROOT: str = ""
+    INFERENCE_DATA_PATH_ROOT: str = ""
+    IS_INFERENCE: bool = False
+    MODEL_PATH: str = ""
+
 
 
 class Model:
     def __init__(self, config: Config):
         self.config = config
-        self.data = self.load_data()
         self.init_learner()
 
     def init_learner(self):
-        self.learner = cnn_learner(
-            self.data,  # must be a data loader instance (dls) like ImageDataBunch.from_folder()
-            models.resnet50,  # pre-trained model chosen
-            metrics=accuracy,
-            callback_fns=SaveBestModel)
-        self.interpretation = ClassificationInterpretation.from_learner(self.learner)
+        if config.IS_INFERENCE:
+            self.learner = load_learner(config.MODEL_PATH)
+        else:
+            self.data = self.load_train_data()
+            self.learner = cnn_learner(
+                self.data,  # must be a data loader instance (dls) like ImageDataBunch.from_folder()
+                models.resnet50,  # pre-trained model chosen
+                metrics=accuracy,
+                callback_fns=SaveBestModel)
+            self.setup_frozen_model()
+            self.interpretation = ClassificationInterpretation.from_learner(self.learner)
 
-    def load_data(self):
+    def setup_frozen_model(self):
+        if self.config.freeze.FREEZE_TYPE == freeze_type["FULLY_UNFROZEN"]:
+            self.learner.unfreeze()
+        elif self.config.freeze.FREEZE_TYPE == freeze_type["FULLY_FROZEN"]:
+            self.learner.freeze()
+        else:
+            self.learner.freeze_to(self.config.freeze.FREEZE_TO)
+
+    def load_inference_data(self):
+        list_img = os.listdir(self.config.INFERENCE_DATA_PATH_ROOT)
+        list_paths = []
+        for path in list_img:
+            path = os.path.join(self.config.INFERENCE_DATA_PATH_ROOT, path)
+            list_paths.append(path)
+        return list_paths
+
+    def load_train_data(self):
         # We create a DataBunch object from the Data folder
         return ImageDataBunch.from_folder(
             Path(self.config.PATH_ROOT),
@@ -49,7 +94,10 @@ class Model:
         ).normalize(imagenet_stats)
 
     def get_results(self):
-        return fmod(self.learner, self.data.train_ds.items)
+        if config.IS_INFERENCE:
+            return fmod(self.learner, self.load_inference_data())
+        else:
+            return fmod(self.learner, self.data.valid_ds.items)
 
     def predict(self, img_path: str):
         return model.learner.predict(open_image(img_path))
@@ -58,34 +106,48 @@ class Model:
 if __name__ == "__main__":
     np.random.seed(42)
 
-    config = Config('Data/')
+    # Fully frozen model
+    config = Config(
+        FreezeConfig(
+            FREEZE_TYPE=freeze_type["FULLY_FROZEN"],
+        ),
+        'Data/',
+    )
     model = Model(config)
 
-    # Fully frozen model
     model.learner.fit_one_cycle(50)
     model.interpretation.plot_confusion_matrix()
-    model.learner.save('resnet50_unfrozen', return_path=True)
+    model.learner.export('resnet50_unfrozen.pkl')
+
 
     # Fully unfrozen
-    model.init_learner()  # reset learner
-    model.learner.load("resnet50_2unfrozen")
-    model.learner.unfreeze()
-    model.learner.lr_find()
-    model.learner.recorder.plot()
+    config = Config(
+        FreezeConfig(
+            FREEZE_TYPE=freeze_type["FULLY_UNFROZEN"],
+        ),
+        'Data/',
+    )
+    model = Model(config)
     model.learner.fit_one_cycle(50, max_lr=6e-05)
-    model.interpretation.plot_confusion_matrix()
-    model.learner.save('resnet50_fully_unfrozen', return_path=True)
+    model.learner.export('resnet50_fully_unfrozen.pkl')
 
     # Freezing the last two layers
-    model.init_learner()
-    model.learner.freeze_to(-2)
+    config = Config(
+        FreezeConfig(
+            FREEZE_TYPE=freeze_type["FREEZE_TO"],
+            FREEZE_TO=-2,
+        ),
+        'Data/',
+    )
+    model = Model(config)
     model.learner.fit_one_cycle(50)
     model.interpretation.plot_confusion_matrix()
 
     # Get 0 to 1 outputs
-    model.init_learner()
-    model.learner.load("resnet50_fullunfrozen")
-    pred_class, pred_idx, outputs = model.predict("Data/Healthy/Im0141_ORIGA.jpg")
-    print(pred_class, pred_idx, outputs, sep="\n")
-
-    result_dict = fmod(model.learner, model.data.train_ds.items)
+    config = Config(
+        INFERENCE_DATA_PATH_ROOT='Data/valid',
+        IS_INFERENCE=True,
+        MODEL_PATH="",
+    )
+    infer_model = Model(config)
+    results = model.get_results()
