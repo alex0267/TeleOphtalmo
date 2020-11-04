@@ -157,8 +157,12 @@ class Model:
         name_healthy = "healthy"
         output_path_glaucoma = "Second_branch/output_MaskRcnn_ORIGA/glaucoma/"
         output_path_healthy = "Second_branch/output_MaskRcnn_ORIGA/healthy/"
-        create_cropped_image(input_path_glaucoma, name_glaucoma, output_path_glaucoma)
-        create_cropped_image(input_path_healthy, name_healthy, output_path_healthy)
+        create_cropped_image(
+            self.input_path_glaucoma, name_glaucoma, output_path_glaucoma, self.SHAPE
+        )
+        create_cropped_image(
+            self.input_path_healthy, name_healthy, output_path_healthy, self.SHAPE
+        )
 
     def get_iou_score(self):
         list_iou = mrcnn_iou_eval(self.model, self.image_annotations)
