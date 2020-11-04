@@ -70,7 +70,8 @@ class Model:
         self.SHAPE = (config.WIDTH, config.WIDTH)
         self.mrcnn_config = MyMRCNNConfig(config)
         self.setup_gpu()
-        self.init_dataset()
+        if not self.config.IS_INFERENCE:
+            self.init_dataset()
         self.init_model()
 
     def setup_gpu(self):
@@ -133,6 +134,8 @@ class Model:
                     "mrcnn_mask",
                 ],
             )
+        else:
+            model.load_weights(self.config.WEIGHTS_PATH, by_name=True)
 
     def train(self):
         self.model.train(
