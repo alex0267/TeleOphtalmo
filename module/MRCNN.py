@@ -205,7 +205,8 @@ if __name__ == "__main__":
     print(model.history())
 
     # Infer
-    config.IS_INFERENCE = False
+    config.IS_INFERENCE = True
+    config.WEIGHTS_PATH = "Second_branch/data_train_mrcnn/mrcnn_optic_disc_student_model.h5"
     model = Model(config)
     img_path = "Second_branch/data_train_mrcnn/A. Segmentation/1. Original Images/a. Training Set/IDRiD_70_flip.jpg"
     result = model.infer(img_path)
