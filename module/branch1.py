@@ -79,7 +79,7 @@ class Model:
     def load_train_data(self):
         # We create a DataBunch object from the Data folder
         return ImageDataBunch.from_folder(
-            Path(self.config.PATH_ROOT),
+            Path(self.config.TRAIN_DATA_PATH_ROOT),
             train="train",
             valid="valid",
             # train='.',
