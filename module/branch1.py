@@ -7,7 +7,7 @@ from fastai.vision import (
     models, ClassificationInterpretation,
     open_image, load_learner
 )
-from .helpers import SaveBestModel, fmod
+from helpers import SaveBestModel, fmod
 import os
 
 
