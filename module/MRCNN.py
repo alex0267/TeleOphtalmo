@@ -9,7 +9,7 @@ from mrcnn.config import Config as MRCNNConfig
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
 
-from .helpers import (DetectorDataset, create_cropped_image,
+from helpers import (DetectorDataset, create_cropped_image,
                       create_pathology_dataframe, mrcnn_iou_eval)
 
 
