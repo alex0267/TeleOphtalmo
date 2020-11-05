@@ -48,8 +48,8 @@ class Model:
         self.init_learner()
 
     def init_learner(self):
-        if config.IS_INFERENCE:
-            self.learner = load_learner(config.MODEL_PATH)
+        if self.config.IS_INFERENCE:
+            self.learner = load_learner(self.config.MODEL_PATH)
         else:
             self.data = self.load_train_data()
             self.learner = cnn_learner(
@@ -96,13 +96,13 @@ class Model:
         ).normalize(imagenet_stats)
 
     def get_results(self):
-        if config.IS_INFERENCE:
+        if self.config.IS_INFERENCE:
             return fmod(self.learner, self.load_inference_data())
         else:
             return fmod(self.learner, self.data.valid_ds.items)
 
     def predict(self, img_path: str):
-        return model.learner.predict(open_image(img_path))
+        return self.learner.predict(open_image(img_path))
 
 
 if __name__ == "__main__":
