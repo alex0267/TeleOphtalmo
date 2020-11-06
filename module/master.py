@@ -99,3 +99,13 @@ class Model:
         results_branch1 = self.branch1.infer()
         results_branch2 = self.branch2.infer()
         return [results_branch1, results_branch2]
+
+
+if __name__ == "__main__":
+    model = Model()
+
+    # create branch 2 cropped dataset if needed
+    model.prepare_branch2_dataset()
+
+    # train all branches sequentially
+    model.train()
