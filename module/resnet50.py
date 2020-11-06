@@ -115,13 +115,11 @@ if __name__ == "__main__":
         FreezeConfig(
             FREEZE_TYPE=freeze_type["FULLY_FROZEN"],
         ),
-        '/home/jupyter/Data/',
+        "/home/jupyter/Data/",
+        MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
     )
     model = Model(config)
-
     model.learner.fit_one_cycle(50)
-    model.interpretation.plot_confusion_matrix()
-    model.learner.export("resnet50_unfrozen.pkl")
 
     # Fully unfrozen
     config.freeze = FreezeConfig(
@@ -129,20 +127,19 @@ if __name__ == "__main__":
     )
     model = Model(config)
     model.learner.fit_one_cycle(50, max_lr=6e-05)
-    model.learner.export("resnet50_fully_unfrozen.pkl")
 
     # Freezing the last two layers
     config.freeze = FreezeConfig(
-            FREEZE_TYPE=freeze_type["FREEZE_TO"],
-            FREEZE_TO=-2,
-        )
+        FREEZE_TYPE=freeze_type["FREEZE_TO"],
+        FREEZE_TO=-2,
+    )
     model = Model(config)
     model.learner.fit_one_cycle(50)
     model.interpretation.plot_confusion_matrix()
 
     # Get 0 to 1 outputs
     config = Config(
-        INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
+        INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid/Glaucoma",
         IS_INFERENCE=True,
         MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
         MODEL_NAME="best_model.pkl",
