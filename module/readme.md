@@ -73,7 +73,7 @@ python
 ```
 
 ```python
->>> import branch1
+>>> import resnet50
 >>> import MRCNN
 ```
 
