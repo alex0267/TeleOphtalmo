@@ -26,14 +26,14 @@ The initialization script will prompt you for a cloud project to use, select `ra
 You should now be able to to SSH into the VM by running:
 
 ```sh
- ./google-cloud-sdk/bin/gcloud compute ssh teleopthalmo
+ ./google-cloud-sdk/bin/gcloud compute ssh teleophtalmo
 ```
 
 Note that if you open a new terminal after the SDK installation process, you can simply run `gcloud` rather that the full path to the binary as done above.
 
 # Configuring Git
 
-Once you are SSH'ed into the VM, you'll need to clone the TeleOpthalmo repository, though you will need to configure you SSH key. The simplest and most secure way is to create a new key pair rather than `scp`'ing your own:
+Once you are SSH'ed into the VM, you'll need to clone the TeleOphtalmo repository, though you will need to configure you SSH key. The simplest and most secure way is to create a new key pair rather than `scp`'ing your own:
 
 ```sh
 ssh-keygen
