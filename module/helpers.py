@@ -213,7 +213,7 @@ class DetectorDataset(utils.Dataset):
         info = self.image_info[image_id]
         mask = cv2.imread(info["annotations"])
         mask = resizeAndPad(mask, self.shape)
-        tab_mask = mask_fct(mask)
+        tab_mask = mask_fct(mask, self.shape[0], self.shape[1])
         return tab_mask
 
 
