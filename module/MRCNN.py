@@ -55,13 +55,13 @@ class MyMRCNNConfig(MRCNNConfig):
     }
 
     def __init__(self, config: Config):
-        super().__init__()
-
         self.STEPS_PER_EPOCH = 15 if config.DEBUG else 150
         self.VALIDATION_STEPS = 10 if config.DEBUG else 125
         self.IMAGE_MIN_DIM = config.WIDTH
         self.IMAGE_MAX_DIM = config.WIDTH
         self.NUM_CLASSES = config.NUM_CLASSES
+
+        super().__init__()
 
 
 class Model:
