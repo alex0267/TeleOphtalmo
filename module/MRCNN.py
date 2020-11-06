@@ -152,6 +152,10 @@ class Model:
         score = self.history["val_loss"][best_epoch]
         return best_epoch, score
 
+    def get_best_model_path(self):
+        model_number = str(self.get_best_epoch()[0]).zfill(4)
+        return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
+
     def create_cropped_image(self):
         input_path_glaucoma = "Data/Glaucoma/"
         input_path_healthy = "Data/Healthy/"
@@ -160,10 +164,18 @@ class Model:
         output_path_glaucoma = "Second_branch/output_MaskRcnn_ORIGA/glaucoma/"
         output_path_healthy = "Second_branch/output_MaskRcnn_ORIGA/healthy/"
         create_cropped_image(
-            self.input_path_glaucoma, name_glaucoma, output_path_glaucoma, self.SHAPE
+            self.model,
+            self.input_path_glaucoma,
+            name_glaucoma,
+            output_path_glaucoma,
+            self.SHAPE,
         )
         create_cropped_image(
-            self.input_path_healthy, name_healthy, output_path_healthy, self.SHAPE
+            self.model,
+            self.input_path_healthy,
+            name_healthy,
+            output_path_healthy,
+            self.SHAPE,
         )
 
     def get_iou_score(self):
@@ -179,19 +191,32 @@ class Model:
 if __name__ == "__main__":
     # Train
     from MRCNN import *
+
     DATA_DIR = "/home/jupyter/Second_branch/data_train_mrcnn/"
-    config = Config(IS_INFERENCE=False, USE_GPU=True, DEBUG=True, WIDTH=1024, NUM_CLASSES=2, MASK_PATH=os.path.join(DATA_DIR, "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",), IMAGE_PATH=os.path.join(DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"), WEIGHTS_PATH="/home/jupyter/mask_rcnn_coco.h5", MODEL_DIR="/home/thomas/TeleOphtalmo/models/branch2/", LEARNING_RATE=0.0001,)
+    config = Config(
+        IS_INFERENCE=False,
+        USE_GPU=True,
+        DEBUG=True,
+        WIDTH=1024,
+        NUM_CLASSES=2,
+        MASK_PATH=os.path.join(
+            DATA_DIR,
+            "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
+        ),
+        IMAGE_PATH=os.path.join(
+            DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
+        ),
+        WEIGHTS_PATH="/home/jupyter/mask_rcnn_coco.h5",
+        MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2/",
+        LEARNING_RATE=0.0001,
+    )
     model = Model(config)
+    model.model.set_log_dir()
     model.train()
-    model.create_cropped_image()
-    print(model.get_iou_score())
-    print(model.get_best_epoch())
-    print(model.history())
+    best_model = model.get_best_model_path()
 
     # Infer
     config.IS_INFERENCE = True
-    config.WEIGHTS_PATH = "Second_branch/data_train_mrcnn/mrcnn_optic_disc_student_model.h5"
+    config.WEIGHTS_PATH = best_model
     model = Model(config)
-    img_path = "Second_branch/data_train_mrcnn/A. Segmentation/1. Original Images/a. Training Set/IDRiD_70_flip.jpg"
-    result = model.infer(img_path)
-    print(result)
+    model.create_cropped_image()
