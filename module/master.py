@@ -18,7 +18,7 @@ class Branch1:
             ),
             f"{HOME}/Data/",
         )
-        model = Model(config)
+        model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
         return model
 
@@ -28,8 +28,7 @@ class Branch1:
             IS_INFERENCE=True,
             MODEL_PATH="",
         )
-        infer_model = Model(config)
-        return infer_model.get_results()
+        return resnet50.Model(config).get_results()
 
 
 class Branch2:
@@ -55,7 +54,7 @@ class Branch2:
             ROOT_DIR="Second_branch/",
             LEARNING_RATE=0.0001,
         )
-        model = Model(config)
+        model = MRCNN.Model(config)
         model.train()
         return model
 
@@ -70,7 +69,7 @@ class Branch2:
             ),
             f"{HOME}/Second_branch/output_MaskRcnn_ORIGA/",
         )
-        model = Model(config)
+        model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
         return model
 
@@ -80,7 +79,7 @@ class Branch2:
             IS_INFERENCE=True,
             MODEL_PATH="best_model_colab",
         )
-        model = Model(config)
+        model = resnet50.Model(config)
         return model.get_results()
 
 
