@@ -152,4 +152,4 @@ if __name__ == "__main__":
         MODEL_PATH="",
     )
     infer_model = Model(config)
-    results = model.get_results()
+    results = infer_model.get_results()
