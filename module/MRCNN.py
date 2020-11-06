@@ -165,14 +165,14 @@ class Model:
         output_path_healthy = "Second_branch/output_MaskRcnn_ORIGA/healthy/"
         create_cropped_image(
             self.model,
-            self.input_path_glaucoma,
+            input_path_glaucoma,
             name_glaucoma,
             output_path_glaucoma,
             self.SHAPE,
         )
         create_cropped_image(
             self.model,
-            self.input_path_healthy,
+            input_path_healthy,
             name_healthy,
             output_path_healthy,
             self.SHAPE,
