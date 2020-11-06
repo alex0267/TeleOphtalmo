@@ -23,7 +23,7 @@ class Config:
     MASK_PATH: str = ""
     IMAGE_PATH: str = ""
     WEIGHTS_PATH: str = ""
-    ROOT_DIR: str = ""
+    MODEL_DIR: str = ""
     LEARNING_RATE: float = 0.0001
 
 
@@ -117,7 +117,7 @@ class Model:
         self.model = modellib.MaskRCNN(
             mode="inference" if self.config.IS_INFERENCE else "training",
             config=self.mrcnn_config,
-            model_dir=self.config.ROOT_DIR,
+            model_dir=self.config.MODEL_DIR,
         )
 
         if not self.config.IS_INFERENCE:
@@ -178,24 +178,9 @@ class Model:
 
 if __name__ == "__main__":
     # Train
-    DATA_DIR = "Second_branch/data_train_mrcnn/"
-    config = Config(
-        IS_INFERENCE=False,
-        USE_GPU=True,
-        DEBUG=True,
-        WIDTH=1024,
-        NUM_CLASSES=2,
-        MASK_PATH=os.path.join(
-            DATA_DIR,
-            "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
-        ),
-        IMAGE_PATH=os.path.join(
-            DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
-        ),
-        WEIGHTS_PATH="mask_rcnn_coco.h5",
-        ROOT_DIR="Second_branch/",
-        LEARNING_RATE=0.0001,
-    )
+    from MRCNN import *
+    DATA_DIR = "/home/jupyter/Second_branch/data_train_mrcnn/"
+    config = Config(IS_INFERENCE=False, USE_GPU=True, DEBUG=True, WIDTH=1024, NUM_CLASSES=2, MASK_PATH=os.path.join(DATA_DIR, "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",), IMAGE_PATH=os.path.join(DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"), WEIGHTS_PATH="/home/jupyter/mask_rcnn_coco.h5", MODEL_DIR="/home/thomas/TeleOphtalmo/models/branch2/", LEARNING_RATE=0.0001,)
     model = Model(config)
     model.train()
     model.create_cropped_image()
