@@ -24,11 +24,11 @@ class SaveBestModel(Recorder):
         if self.best_acc is None or acc > self.best_acc:
             self.best_acc = acc
             self.best_loss = loss
-            self.learn.save(f"{self.name}")
+            self.learn.export(f"{self.name}.pkl")
             print("Save the best accuracy {:.5f}".format(self.best_acc))
         elif acc == self.best_acc and loss < self.best_loss:
             self.best_loss = loss
-            self.learn.save(f"{self.name}")
+            self.learn.export(f"{self.name}.pkl")
             print("Accuracy is eq, Save the lower loss {:.5f}".format(self.best_loss))
 
     def on_epoch_end(self, last_metrics=MetricsList, **kwargs: Any):

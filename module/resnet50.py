@@ -56,7 +56,9 @@ class Model:
                 self.data,  # must be a data loader instance (dls) like ImageDataBunch.from_folder()
                 models.resnet50,  # pre-trained model chosen
                 metrics=accuracy,
-                callback_fns=SaveBestModel)
+                callback_fns=SaveBestModel,
+                path=self.config.MODEL_PATH,
+            )
             self.setup_frozen_model()
             self.interpretation = ClassificationInterpretation.from_learner(self.learner)
 
