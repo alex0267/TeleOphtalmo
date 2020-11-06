@@ -61,7 +61,7 @@ class Branch2:
     def crop_images(self):
         self.train_mrcnn().create_cropped_image()
 
-    def train_resnet50(self):
+    def train(self):
         config = resnet50.Config(
             resnet50.FreezeConfig(
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
@@ -88,10 +88,12 @@ class Model:
         self.branch1 = Branch1()
         self.branch2 = Branch2()
 
+    def prepare_branch2_dataset(self):
+        self.branch2.crop_images()
+
     def train(self):
         self.branch1.train()
-        self.branch2.train_mrcnn().create_cropped_image()
-        self.branch2.train_resnet50()
+        self.branch2.train()
 
     def infer(self):
         results_branch1 = self.branch1.infer()
