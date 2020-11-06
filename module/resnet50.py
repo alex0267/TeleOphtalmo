@@ -32,6 +32,18 @@ class FreezeConfig:
 
 @dataclass
 class Config:
+    """
+    Params
+    ------
+    freeze: transfer learning model freezing configuration
+    TRAIN_DATA_PATH_ROOT: path to train data root
+    INFERENCE_DATA_PATH_ROOT: path to folder containing files to infer
+    IS_INFERENCE: flag to train the model or infer using it
+    MODEL_DIR:
+      - if IS_INFERENCE: directory of model to load
+      - if not IS_INFERENCE: directory to save model in
+    MODEL_NAME: name of model to load when infering
+    """
     freeze: FreezeConfig = FreezeConfig()
     TRAIN_DATA_PATH_ROOT: str = ""
     INFERENCE_DATA_PATH_ROOT: str = ""
