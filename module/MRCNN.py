@@ -134,7 +134,7 @@ class Model:
                 ],
             )
         else:
-            model.load_weights(self.config.WEIGHTS_PATH, by_name=True)
+            self.model.load_weights(self.config.WEIGHTS_PATH, by_name=True)
 
     def train(self):
         self.model.train(
@@ -185,7 +185,7 @@ class Model:
     def infer(self, img_path):
         img = imread(img_path)
         img_detect = img.copy()
-        return model.detect([img_detect], verbose=1)
+        return self.model.detect([img_detect], verbose=1)
 
 
 if __name__ == "__main__":
