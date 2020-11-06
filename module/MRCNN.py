@@ -190,8 +190,6 @@ class Model:
 
 if __name__ == "__main__":
     # Train
-    from MRCNN import *
-
     DATA_DIR = "/home/jupyter/Second_branch/data_train_mrcnn/"
     config = Config(
         IS_INFERENCE=False,
@@ -211,7 +209,6 @@ if __name__ == "__main__":
         LEARNING_RATE=0.0001,
     )
     model = Model(config)
-    model.model.set_log_dir()
     model.train()
     best_model = model.get_best_model_path()
 
