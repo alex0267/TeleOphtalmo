@@ -36,7 +36,8 @@ class Config:
     TRAIN_DATA_PATH_ROOT: str = ""
     INFERENCE_DATA_PATH_ROOT: str = ""
     IS_INFERENCE: bool = False
-    MODEL_PATH: str = ""
+    MODEL_DIR: str = ""
+    MODEL_NAME: str = "export.pkl"
 
 
 class Model:
@@ -46,7 +47,7 @@ class Model:
 
     def init_learner(self):
         if self.config.IS_INFERENCE:
-            self.learner = load_learner(self.config.MODEL_PATH)
+            self.learner = load_learner(self.config.MODEL_DIR, self.config.MODEL_NAME)
         else:
             self.data = self.load_train_data()
             self.learner = cnn_learner(
@@ -54,7 +55,7 @@ class Model:
                 models.resnet50,  # pre-trained model chosen
                 metrics=accuracy,
                 callback_fns=SaveBestModel,
-                path=self.config.MODEL_PATH,
+                path=self.config.MODEL_DIR,
             )
             self.setup_frozen_model()
             self.interpretation = ClassificationInterpretation.from_learner(
@@ -143,7 +144,8 @@ if __name__ == "__main__":
     config = Config(
         INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
         IS_INFERENCE=True,
-        MODEL_PATH="",
+        MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
+        MODEL_NAME="best_model.pkl",
     )
     infer_model = Model(config)
     results = infer_model.get_results()
