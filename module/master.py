@@ -92,7 +92,8 @@ class Model:
 
     def train(self):
         self.branch1.train()
-        self.branch2.train_mrcnn()
+        branch2_mrcnn_model = self.branch2.train_mrcnn()
+        branch2_mrcnn_model.create_cropped_image()
         self.branch2.train_resnet50()
 
     def infer(self):
