@@ -68,7 +68,8 @@ pip install -r requirements.txt
 You should now be able launch a Python REPL and import the models. Make sure to be in the `module` folder or else the `import` statements will fail:
 
 ```sh
-cd module
+cd module/
+python
 ```
 
 ```python
