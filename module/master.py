@@ -60,8 +60,7 @@ class Branch2:
         return model
 
     def crop_images(self):
-        model = self.train_mrcnn()
-        model.create_cropped_image()
+        self.train_mrcnn().create_cropped_image()
 
     def train_resnet50(self):
         config = resnet50.Config(
@@ -92,8 +91,7 @@ class Model:
 
     def train(self):
         self.branch1.train()
-        branch2_mrcnn_model = self.branch2.train_mrcnn()
-        branch2_mrcnn_model.create_cropped_image()
+        self.branch2.train_mrcnn().create_cropped_image()
         self.branch2.train_resnet50()
 
     def infer(self):
