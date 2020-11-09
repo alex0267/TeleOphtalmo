@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 from typing import Any
 
 import cv2
@@ -313,3 +314,38 @@ def mrcnn_iou_eval(model, anns):
         list_iou.append(iou_score)
 
     return list_iou
+
+
+def train_valid_split(data_dir, healthy_name, glaucoma_name):
+    healthy_path = os.path.join(data_dir, healthy_name)
+    glaucoma_path = os.path.join(data_dir, glaucoma_name)
+    list_healthy = os.listdir(healthy_path)
+    list_glaucoma = os.listdir(glaucoma_path)
+
+    # Putting 386 pictures in the training folder
+    # 482 healthy images *.8 = 386
+    for i, filename in enumerate(list_healthy):
+        if i < 386:
+            shutil.copyfile(
+                os.path.join(healthy_path, filename),
+                os.path.join(data_dir, "train", healthy_name, filename),
+            )
+        else:
+            shutil.copyfile(
+                os.path.join(healthy_path, filename),
+                os.path.join(data_dir, "valid", healthy_name, filename),
+            )
+
+    # Putting 134 pictures in the training folder
+    # 168 glaucoma images *.8 = 134
+    for i, filename in enumerate(list_glaucoma):
+        if i < 134:
+            shutil.copyfile(
+                os.path.join(glaucoma_path, filename),
+                os.path.join(data_dir, "train", glaucoma_name, filename),
+            )
+        else:
+            shutil.copyfile(
+                os.path.join(glaucoma_path, filename),
+                os.path.join(data_dir, "valid", glaucoma_name, filename),
+            )

@@ -1,5 +1,6 @@
 import os
 
+import helpers
 import MRCNN
 import resnet50
 
@@ -109,6 +110,11 @@ class Model:
 
     def prepare_branch2_dataset(self):
         self.branch2.crop_images()
+        helpers.train_valid_split(
+            "/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA",
+            "healthy",
+            "glaucoma",
+        )
 
     def train(self):
         self.branch1.train()
