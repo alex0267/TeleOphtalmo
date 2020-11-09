@@ -322,6 +322,18 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
     list_healthy = os.listdir(healthy_path)
     list_glaucoma = os.listdir(glaucoma_path)
 
+    train_healthy_target_path = os.path.join(data_dir, "train", healthy_name)
+    train_glaucoma_target_path = os.path.join(data_dir, "train", glaucoma_name)
+    valid_healthy_target_path = os.path.join(data_dir, "valid", healthy_name)
+    valid_glaucoma_target_path = os.path.join(data_dir, "valid", glaucoma_name)
+    for path in [
+        train_healthy_target_path,
+        train_glaucoma_target_path,
+        valid_healthy_target_path,
+        valid_glaucoma_target_path,
+    ]:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
     # Putting 386 pictures in the training folder
     # 482 healthy images *.8 = 386
     for i, filename in enumerate(list_healthy):
