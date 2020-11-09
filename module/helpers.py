@@ -232,10 +232,17 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
     images = sorted_alphanumeric(os.listdir(path))
     # print(images)
 
+    skipped_files = []
     for name in images:
-        img = imread(path + name)
+        print("===> ", name)
+
+        try:
+            img = imread(path + name)
+        except ValueError:
+            skipped_files.append(path + name)
+            continue
+
         img_detect = img.copy()
-        print(name)
         aug = False
         if aug:
             img_detect = aug_detect(image=img)
@@ -268,6 +275,11 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
 
         else:  # Roi not found
             print("roi not found")
+
+    if len(skipped_files):
+        print("The following files were skipped:")
+        for path in skipped_files:
+            print(path)
 
 
 def mrcnn_iou_eval(model, anns):
