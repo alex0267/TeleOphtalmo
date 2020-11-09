@@ -170,16 +170,16 @@ class Model:
     def create_cropped_image(self):
         create_cropped_image(
             self.model,
-            self.config.cropped_image.INPUT_PATH_GLAUCOMA,
-            self.config.cropped_image.NAME_GLAUCOMA,
-            self.config.cropped_image.OUTPUT_PATH_GLAUCOMA,
+            self.config.cropped_image.INPUT_PATH_HEALTHY,
+            self.config.cropped_image.NAME_HEALTHY,
+            self.config.cropped_image.OUTPUT_PATH_HEALTHY,
             self.SHAPE,
         )
         create_cropped_image(
             self.model,
-            self.config.cropped_image.INPUT_PATH_HEALTHY,
-            self.config.cropped_image.NAME_HEALTHY,
-            self.config.cropped_image.OUTPUT_PATH_HEALTHY,
+            self.config.cropped_image.INPUT_PATH_GLAUCOMA,
+            self.config.cropped_image.NAME_GLAUCOMA,
+            self.config.cropped_image.OUTPUT_PATH_GLAUCOMA,
             self.SHAPE,
         )
 
