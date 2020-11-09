@@ -16,7 +16,8 @@ class Branch1:
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
                 FREEZE_TO=-2,
             ),
-            f"{HOME}/Data/",
+            TRAIN_DATA_PATH_ROOT=f"{HOME}/Data/",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
         )
         model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
@@ -24,9 +25,10 @@ class Branch1:
 
     def infer(self):
         config = resnet50.Config(
-            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
+            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid/Glaucoma",
             IS_INFERENCE=True,
-            MODEL_PATH="",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
+            MODEL_NAME="best_model.pkl",
         )
         return resnet50.Model(config).get_results()
 
@@ -37,6 +39,14 @@ class Branch2:
 
     def train_mrcnn(self):
         DATA_DIR = f"{HOME}/Second_branch/data_train_mrcnn/"
+        cropped_image_config = MRCNN.CroppedImageConfig(
+            INPUT_PATH_GLAUCOMA="/home/jupyter/Data/Glaucoma/",
+            INPUT_PATH_HEALTHY="/home/jupyter/Data/Healthy/",
+            NAME_GLAUCOMA="glaucoma",
+            NAME_HEALTHY="healthy",
+            OUTPUT_PATH_GLAUCOMA="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/glaucoma/",
+            OUTPUT_PATH_HEALTHY="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/healthy/",
+        )
         config = MRCNN.Config(
             IS_INFERENCE=False,
             USE_GPU=True,
@@ -51,12 +61,19 @@ class Branch2:
                 DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
             ),
             WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
-            ROOT_DIR="Second_branch/",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2/",
             LEARNING_RATE=0.0001,
+            cropped_image=cropped_image_config,
         )
         model = MRCNN.Model(config)
         model.train()
-        return model
+
+        best_model_path = model.get_best_model_path()
+        config.IS_INFERENCE = True
+        config.WEIGHTS_PATH = best_model_path
+        best_model = Model(config)
+
+        return best_model
 
     def crop_images(self):
         self.train_mrcnn().create_cropped_image()
@@ -67,7 +84,8 @@ class Branch2:
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
                 FREEZE_TO=-2,
             ),
-            f"{HOME}/Second_branch/output_MaskRcnn_ORIGA/",
+            TRAIN_DATA_PATH_ROOT="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
         )
         model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
@@ -77,7 +95,8 @@ class Branch2:
         config = resnet50.Config(
             INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
             IS_INFERENCE=True,
-            MODEL_PATH="best_model_colab",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
+            MODEL_NAME="best_model.pkl",
         )
         model = resnet50.Model(config)
         return model.get_results()
