@@ -13,6 +13,16 @@ from sklearn.model_selection import train_test_split
 
 
 @dataclass
+class CroppedImageConfig:
+    INPUT_PATH_GLAUCOMA: str = ""
+    INPUT_PATH_HEALTHY: str = ""
+    NAME_GLAUCOMA: str = ""
+    NAME_HEALTHY: str = ""
+    OUTPUT_PATH_GLAUCOMA: str = ""
+    OUTPUT_PATH_HEALTHY: str = ""
+
+
+@dataclass
 class Config:
     IS_INFERENCE: bool = False
     MODEL_PATH: str = ""
@@ -25,6 +35,7 @@ class Config:
     WEIGHTS_PATH: str = ""
     MODEL_DIR: str = ""
     LEARNING_RATE: float = 0.0001
+    cropped_image: CroppedImageConfig = CroppedImageConfig()
 
 
 class MyMRCNNConfig(MRCNNConfig):
@@ -157,24 +168,18 @@ class Model:
         return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
 
     def create_cropped_image(self):
-        input_path_glaucoma = "Data/Glaucoma/"
-        input_path_healthy = "Data/Healthy/"
-        name_glaucoma = "glaucoma"
-        name_healthy = "healthy"
-        output_path_glaucoma = "Second_branch/output_MaskRcnn_ORIGA/glaucoma/"
-        output_path_healthy = "Second_branch/output_MaskRcnn_ORIGA/healthy/"
         create_cropped_image(
             self.model,
-            input_path_glaucoma,
-            name_glaucoma,
-            output_path_glaucoma,
+            self.config.cropped_image.INPUT_PATH_GLAUCOMA,
+            self.config.cropped_image.NAME_GLAUCOMA,
+            self.config.cropped_image.OUTPUT_PATH_GLAUCOMA,
             self.SHAPE,
         )
         create_cropped_image(
             self.model,
-            input_path_healthy,
-            name_healthy,
-            output_path_healthy,
+            self.config.cropped_image.INPUT_PATH_HEALTHY,
+            self.config.cropped_image.NAME_HEALTHY,
+            self.config.cropped_image.OUTPUT_PATH_HEALTHY,
             self.SHAPE,
         )
 
@@ -191,6 +196,14 @@ class Model:
 if __name__ == "__main__":
     # Train
     DATA_DIR = "/home/jupyter/Second_branch/data_train_mrcnn/"
+    cropped_image_config = CroppedImageConfig(
+        INPUT_PATH_GLAUCOMA="/home/jupyter/Data/Glaucoma/",
+        INPUT_PATH_HEALTHY="/home/jupyter/Data/Healthy/",
+        NAME_GLAUCOMA="glaucoma",
+        NAME_HEALTHY="healthy",
+        OUTPUT_PATH_GLAUCOMA="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/glaucoma/",
+        OUTPUT_PATH_HEALTHY="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/healthy/",
+    )
     config = Config(
         IS_INFERENCE=False,
         USE_GPU=True,
@@ -207,6 +220,7 @@ if __name__ == "__main__":
         WEIGHTS_PATH="/home/jupyter/mask_rcnn_coco.h5",
         MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2/",
         LEARNING_RATE=0.0001,
+        cropped_image=cropped_image_config,
     )
     model = Model(config)
     model.train()
