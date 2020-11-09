@@ -332,7 +332,7 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
         valid_healthy_target_path,
         valid_glaucoma_target_path,
     ]:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(path, exist_ok=True)
 
     # Putting 386 pictures in the training folder
     # 482 healthy images *.8 = 386
