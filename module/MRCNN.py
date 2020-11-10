@@ -10,7 +10,7 @@ from keras.backend.tensorflow_backend import set_session
 from mrcnn.config import Config as MRCNNConfig
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
-from typings import Dict
+from typing import Dict
 
 
 @dataclass
