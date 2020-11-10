@@ -217,7 +217,7 @@ if __name__ == "__main__":
         MASK_PATHS={
             "Path": os.path.join(
                 DATA_DIR,
-                "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
+                "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/5. Optic Disc",
             ),
         },
         IMAGE_PATH=os.path.join(
