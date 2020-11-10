@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import mrcnn.model as modellib
 import numpy as np
@@ -31,7 +31,7 @@ class Config:
     DEBUG: bool = True
     WIDTH: int = 1024
     NUM_CLASSES: int = 2
-    MASK_PATHS: Dict[str, str] = {}
+    MASK_PATHS: Dict[str, str] = field(default_factory=dict)
     IMAGE_PATH: str = ""
     WEIGHTS_PATH: str = ""
     MODEL_DIR: str = ""
