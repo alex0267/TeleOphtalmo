@@ -118,7 +118,7 @@ class Model:
         else:
             return fmod(self.learner, self.data.valid_ds.items)
 
-    def predict(self, img_path: str):
+    def infer(self, img_path: str):
         return self.learner.predict(open_image(img_path))
 
     def train(self):
