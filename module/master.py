@@ -5,7 +5,7 @@ import MRCNN
 import resnet50
 
 HOME = "/home/jupyter"
-
+N_EPOCHS = 2
 
 class Branch1:
     def __init__(self):
@@ -19,6 +19,7 @@ class Branch1:
             ),
             TRAIN_DATA_PATH_ROOT=f"{HOME}/Data/",
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
+            EPOCHS=N_EPOCHS,
         )
         model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
@@ -67,6 +68,7 @@ class Branch2:
             WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2/",
             LEARNING_RATE=0.0001,
+            EPOCHS=N_EPOCHS,
             cropped_image=cropped_image_config,
         )
         model = MRCNN.Model(config)
@@ -90,6 +92,7 @@ class Branch2:
             ),
             TRAIN_DATA_PATH_ROOT="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/",
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
+            EPOCHS=N_EPOCHS,
         )
         model = resnet50.Model(config)
         model.learner.fit_one_cycle(50)
@@ -133,6 +136,7 @@ class Branch3:
             WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch3/",
             LEARNING_RATE=0.0001,
+            EPOCHS=N_EPOCHS,
         )
         model = MRCNN.Model(config)
         model.train()

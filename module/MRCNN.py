@@ -37,6 +37,7 @@ class Config:
     WEIGHTS_PATH: str = ""
     MODEL_DIR: str = ""
     LEARNING_RATE: float = 0.0001
+    EPOCHS: int = 50
     cropped_image: CroppedImageConfig = CroppedImageConfig()
 
 
@@ -167,7 +168,7 @@ class Model:
             self.dataset_train,
             self.dataset_val,
             learning_rate=self.config.LEARNING_RATE,
-            epochs=4 if self.config.DEBUG else 250,
+            epochs=self.config.EPOCHS,
             layers="heads",
             augmentation=None,
         )

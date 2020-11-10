@@ -50,6 +50,7 @@ class Config:
     IS_INFERENCE: bool = False
     MODEL_DIR: str = ""
     MODEL_NAME: str = "export.pkl"
+    EPOCHS: int = 50
 
 
 class Model:
@@ -119,6 +120,9 @@ class Model:
 
     def predict(self, img_path: str):
         return self.learner.predict(open_image(img_path))
+
+    def train(self):
+        self.model.fit_one_cycle(self.config.EPOCHS)
 
 
 if __name__ == "__main__":
