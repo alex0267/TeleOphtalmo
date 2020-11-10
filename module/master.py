@@ -105,6 +105,47 @@ class Branch2:
         return model.get_results()
 
 
+class Branch3:
+    def __init__(self):
+        pass
+
+    def train(self):
+        DATA_DIR = f"{HOME}/Third_branch/mask_for_maskrcnn/"
+        config = MRCNN.Config(
+            IS_INFERENCE=False,
+            USE_GPU=True,
+            DEBUG=True,
+            WIDTH=1024,
+            NUM_CLASSES=3,
+            MASK_PATHS={
+                "Disc": os.path.join(
+                    DATA_DIR,
+                    "disc_segmented",
+                ),
+                "Cup": os.path.join(
+                    DATA_DIR,
+                    "cup_segmented",
+                ),
+            },
+            IMAGE_PATH=os.path.join(DATA_DIR, "original"),
+            WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch3/",
+            LEARNING_RATE=0.0001,
+        )
+        model = MRCNN.Model(config)
+        model.train()
+
+        best_model_path = model.get_best_model_path()
+        config.IS_INFERENCE = True
+        config.WEIGHTS_PATH = best_model_path
+        best_model = Model(config)
+
+        return best_model
+
+    def infer(self):
+        pass
+
+
 class Model:
     def __init__(self):
         self.branch1 = Branch1()
