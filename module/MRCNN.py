@@ -223,7 +223,7 @@ if __name__ == "__main__":
         WIDTH=1024,
         NUM_CLASSES=2,
         MASK_PATHS={
-            "Path": os.path.join(
+            "Disc": os.path.join(
                 DATA_DIR,
                 "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/5. Optic Disc",
             ),
