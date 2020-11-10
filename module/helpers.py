@@ -12,6 +12,13 @@ from mrcnn import utils
 from skimage.io import imread
 
 
+COLORS = {
+    'blue': 0,
+    'green': 1,
+    'red': 2,
+}
+
+
 class SaveBestModel(Recorder):
     def __init__(self, learn, name="best_model"):
         super().__init__(learn)
@@ -192,11 +199,13 @@ class DetectorDataset(utils.Dataset):
         shape,
         class_names,
         annotation_mask_names,
+        mask_color,
     ):
         super().__init__(self)
 
         self.shape = shape
         self.annotation_mask_names = annotation_mask_names
+        self.mask_color = mask_color
 
         # Add classes
         for i, class_name in enumerate(class_names):
@@ -241,7 +250,7 @@ class DetectorDataset(utils.Dataset):
             mask = cv2.imread(info["annotations"][i])
             mask = resizeAndPad(mask, self.shape)
             mask = np.where(mask > 0, 1, 0)
-            masks[:, :, i] = mask[:, :, 0]
+            masks[:, :, i] = mask[:, :, self.mask_color]
 
         class_ids = np.array([i + 1 for i in list(range(n_classes))])
 

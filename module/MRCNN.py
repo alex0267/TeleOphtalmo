@@ -5,7 +5,7 @@ from typing import Dict
 import mrcnn.model as modellib
 import numpy as np
 import tensorflow as tf
-from helpers import (DetectorDataset, create_cropped_image,
+from helpers import (COLORS, DetectorDataset, create_cropped_image,
                      create_pathology_dataframe, mrcnn_iou_eval)
 from keras.backend.tensorflow_backend import set_session
 from mrcnn.config import Config as MRCNNConfig
@@ -32,6 +32,7 @@ class Config:
     WIDTH: int = 1024
     NUM_CLASSES: int = 2
     MASK_PATHS: Dict[str, str] = field(default_factory=dict)
+    MASK_COLOR: int = COLORS["red"]
     IMAGE_PATH: str = ""
     WEIGHTS_PATH: str = ""
     MODEL_DIR: str = ""
@@ -121,6 +122,7 @@ class Model:
             self.SHAPE,
             class_names,
             annotation_mask_names,
+            self.config.MASK_COLOR,
         )
         self.dataset_train.prepare()
 
@@ -131,6 +133,7 @@ class Model:
             self.SHAPE,
             class_names,
             annotation_mask_names,
+            self.config.MASK_COLOR,
         )
         self.dataset_val.prepare()
 

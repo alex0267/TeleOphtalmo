@@ -54,6 +54,7 @@ class Branch2:
             DEBUG=True,
             WIDTH=1024,
             NUM_CLASSES=2,
+            MASK_COLOR=helpers.COLORS['red'],
             MASK_PATHS={
                 "Disc": os.path.join(
                     DATA_DIR,
@@ -117,6 +118,7 @@ class Branch3:
             DEBUG=True,
             WIDTH=1024,
             NUM_CLASSES=3,
+            MASK_COLOR=helpers.COLORS['blue'],
             MASK_PATHS={
                 "Disc": os.path.join(
                     DATA_DIR,
