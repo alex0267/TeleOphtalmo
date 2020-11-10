@@ -22,7 +22,7 @@ class Branch1:
             EPOCHS=N_EPOCHS,
         )
         model = resnet50.Model(config)
-        model.learner.fit_one_cycle(50)
+        model.train()
         return model
 
     def infer(self):
@@ -95,7 +95,7 @@ class Branch2:
             EPOCHS=N_EPOCHS,
         )
         model = resnet50.Model(config)
-        model.learner.fit_one_cycle(50)
+        model.train()
         return model
 
     def infer(self):
