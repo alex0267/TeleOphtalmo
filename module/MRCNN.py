@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass, field
+from typing import Dict
 
 import mrcnn.model as modellib
 import numpy as np
@@ -10,7 +11,6 @@ from keras.backend.tensorflow_backend import set_session
 from mrcnn.config import Config as MRCNNConfig
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
-from typing import Dict
 
 
 @dataclass
