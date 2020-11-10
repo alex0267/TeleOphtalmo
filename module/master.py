@@ -152,6 +152,7 @@ class Model:
     def __init__(self):
         self.branch1 = Branch1()
         self.branch2 = Branch2()
+        self.branch3 = Branch3()
 
     def prepare_branch2_dataset(self):
         self.branch2.crop_images()
@@ -164,11 +165,13 @@ class Model:
     def train(self):
         self.branch1.train()
         self.branch2.train()
+        self.branch3.train()
 
     def infer(self):
         results_branch1 = self.branch1.infer()
         results_branch2 = self.branch2.infer()
-        return [results_branch1, results_branch2]
+        results_branch3 = self.branch3.infer()
+        return [results_branch1, results_branch2, results_branch3]
 
 
 if __name__ == "__main__":
