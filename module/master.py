@@ -7,6 +7,7 @@ import resnet50
 HOME = "/home/jupyter"
 N_EPOCHS = 2
 
+
 class Branch1:
     def __init__(self):
         pass
@@ -113,9 +114,9 @@ class Branch3:
     def __init__(self):
         pass
 
-    def train(self):
+    def get_train_config(self):
         DATA_DIR = f"{HOME}/Third_branch/mask_for_maskrcnn/"
-        config = MRCNN.Config(
+        return MRCNN.Config(
             IS_INFERENCE=False,
             USE_GPU=True,
             DEBUG=True,
@@ -138,6 +139,14 @@ class Branch3:
             LEARNING_RATE=0.0001,
             EPOCHS=N_EPOCHS,
         )
+
+    def get_infer_config(self):
+        config = self.get_train_config()
+        config.IS_INFERENCE = True
+        return config
+
+    def train(self):
+        config = self.get_train_config()
         model = MRCNN.Model(config)
         model.train()
 
@@ -149,7 +158,9 @@ class Branch3:
         return best_model
 
     def infer(self):
-        pass
+        config = self.get_inference_config()
+        model = MRCNN.Model(config)
+        return model.infer()
 
 
 class Model:
