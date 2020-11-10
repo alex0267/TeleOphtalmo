@@ -54,10 +54,12 @@ class Branch2:
             DEBUG=True,
             WIDTH=1024,
             NUM_CLASSES=2,
-            MASK_PATH=os.path.join(
-                DATA_DIR,
-                "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
-            ),
+            MASK_PATHS={
+                "Disc": os.path.join(
+                    DATA_DIR,
+                    "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/5. Optic Disc",
+                ),
+            },
             IMAGE_PATH=os.path.join(
                 DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
             ),
