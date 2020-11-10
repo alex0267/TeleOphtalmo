@@ -152,26 +152,6 @@ def rename(row):
     return row[:-7] + ".jpg"
 
 
-def create_pathology_dataframe_old(mask_path, image_path):
-    """create dataframe for pathology selected"""
-    files = os.listdir(mask_path)
-    files = files[0:1]
-    images = []
-    for path in files:
-        path = os.path.join(mask_path, path)
-        paths = os.listdir(path)
-        for img in paths:
-            img = os.path.join(path, img)
-            images.append(img)
-    annotations = pd.DataFrame(images, columns=["Paths_mask"])
-    annotations["ID_mask"] = annotations["Paths_mask"].apply(
-        lambda row: row.split(os.path.sep)[-1]
-    )
-    annotations["ID"] = annotations["ID_mask"].apply(lambda row: rename(row))
-    annotations["Path"] = annotations["ID"].apply(lambda row: image_path + row)
-    return annotations
-
-
 def create_pathology_dataframe(image_path, mask_paths):
     files_image = os.listdir(image_path)
     images = []
