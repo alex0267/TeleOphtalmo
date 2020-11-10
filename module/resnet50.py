@@ -58,6 +58,8 @@ class Model:
         self.init_learner()
 
     def init_learner(self):
+        os.makedirs(self.config.MODEL_DIR, exist_ok=True)
+
         if self.config.IS_INFERENCE:
             self.learner = load_learner(self.config.MODEL_DIR, self.config.MODEL_NAME)
         else:

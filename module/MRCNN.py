@@ -135,6 +135,8 @@ class Model:
         self.dataset_val.prepare()
 
     def init_model(self):
+        os.makedirs(self.config.MODEL_DIR, exist_ok=True)
+
         self.model = modellib.MaskRCNN(
             mode="inference" if self.config.IS_INFERENCE else "training",
             config=self.mrcnn_config,
