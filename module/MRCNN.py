@@ -112,13 +112,15 @@ class Model:
 
     def init_dataset(self):
         image_fps_train, image_fps_val, self.image_annotations = self.split_dataframe()
+        class_names = list(self.config.MASK_PATHS.keys())
+        annotation_mask_names = list(self.config.MASK_PATHS.keys())
         self.dataset_train = DetectorDataset(
             image_fps_train,
             self.image_annotations,
             self.config.IMAGE_PATH,
             self.SHAPE,
-            class_names=list(self.config.MASK_PATHS.keys()),
-            annotation_mask_names=list(self.config.MASK_PATHS.keys()),
+            class_names,
+            annotation_mask_names,
         )
         self.dataset_train.prepare()
 
@@ -127,6 +129,8 @@ class Model:
             self.image_annotations,
             self.config.IMAGE_PATH,
             self.SHAPE,
+            class_names,
+            annotation_mask_names,
         )
         self.dataset_val.prepare()
 
