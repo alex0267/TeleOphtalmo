@@ -10,6 +10,7 @@ from keras.backend.tensorflow_backend import set_session
 from mrcnn.config import Config as MRCNNConfig
 from skimage.io import imread
 from sklearn.model_selection import train_test_split
+from typings import Dict
 
 
 @dataclass
@@ -30,7 +31,7 @@ class Config:
     DEBUG: bool = True
     WIDTH: int = 1024
     NUM_CLASSES: int = 2
-    MASK_PATH: str = ""
+    MASK_PATHS: Dict[str, str] = {}
     IMAGE_PATH: str = ""
     WEIGHTS_PATH: str = ""
     MODEL_DIR: str = ""
@@ -94,7 +95,10 @@ class Model:
 
     def split_dataframe(self):
         """Split dataframe 80/20 train/test"""
-        anns = create_pathology_dataframe(self.config.MASK_PATH, self.config.IMAGE_PATH)
+        anns = create_pathology_dataframe(
+            self.config.IMAGE_PATH,
+            self.config.MASK_PATHS,
+        )
         train_names = anns.ID.unique().tolist()  # override with ships
 
         test_size = (
@@ -210,10 +214,12 @@ if __name__ == "__main__":
         DEBUG=True,
         WIDTH=1024,
         NUM_CLASSES=2,
-        MASK_PATH=os.path.join(
-            DATA_DIR,
-            "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
-        ),
+        MASK_PATHS={
+            "Path": os.path.join(
+                DATA_DIR,
+                "A. Segmentation/2. All Segmentation Groundtruths/a. Training Set/",
+            ),
+        },
         IMAGE_PATH=os.path.join(
             DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
         ),

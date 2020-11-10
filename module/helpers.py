@@ -152,7 +152,7 @@ def rename(row):
     return row[:-7] + ".jpg"
 
 
-def create_pathology_dataframe(mask_path, image_path):
+def create_pathology_dataframe_old(mask_path, image_path):
     """create dataframe for pathology selected"""
     files = os.listdir(mask_path)
     files = files[0:1]
@@ -172,6 +172,33 @@ def create_pathology_dataframe(mask_path, image_path):
     return annotations
 
 
+def create_pathology_dataframe(image_path, mask_paths):
+    files_image = os.listdir(image_path)
+    images = []
+    for path in files_image:
+        path = os.path.join(image_path, path)
+        images.append(path)
+        images.sort()
+
+    annotations = pd.DataFrame(images, columns=["Paths"])
+    annotations["ID"] = annotations["Paths"].apply(
+        lambda row: row.split(os.path.sep)[-1]
+    )
+
+    masks = {}
+    for mask_name, mask_path in mask_paths.items():
+        files = os.listdir(mask_path)
+        masks = []
+        for path in files:
+            path = os.path.join(mask_path, path)
+            masks.append(path)
+            masks.sort()
+
+        annotations[mask_name] = masks
+
+    return annotations
+
+
 class DetectorDataset(utils.Dataset):
     """Dataset class for training our dataset."""
 
@@ -185,7 +212,7 @@ class DetectorDataset(utils.Dataset):
         # add images
         for i, fp in enumerate(image_fps):
             annotations = image_annotations.query('ID =="' + fp + '"')[
-                "Paths_mask"
+                "Paths"
             ].iloc[0]
             self.add_image(
                 "point",
