@@ -156,9 +156,10 @@ def create_pathology_dataframe(image_path, mask_paths):
     files_image = os.listdir(image_path)
     images = []
     for path in files_image:
-        path = os.path.join(image_path, path)
-        images.append(path)
-        images.sort()
+        if path != '.ipynb_checkpoints': #temp fix to a bug
+            path = os.path.join(image_path, path)
+            images.append(path)
+            images.sort()
 
     annotations = pd.DataFrame(images, columns=["Paths"])
     annotations["ID"] = annotations["Paths"].apply(
