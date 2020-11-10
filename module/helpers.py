@@ -182,25 +182,39 @@ def create_pathology_dataframe(image_path, mask_paths):
 class DetectorDataset(utils.Dataset):
     """Dataset class for training our dataset."""
 
-    def __init__(self, image_fps, image_annotations, image_path, shape):
+    def __init__(
+        self,
+        image_fps,
+        image_annotations,
+        image_path,
+        shape,
+        class_names,
+        annotation_mask_names,
+    ):
         super().__init__(self)
 
         self.shape = shape
+        self.annotation_mask_names = annotation_mask_names
 
         # Add classes
-        self.add_class("point", 1, "point")
+        for i, class_name in enumerate(class_names):
+            self.add_class("Magrabia", i, class_name)
+
         # add images
         for i, fp in enumerate(image_fps):
-            annotations = image_annotations.query('ID =="' + fp + '"')[
-                "Paths"
-            ].iloc[0]
+            path_img = image_annotations.query('ID =="' + fp + '"')["Paths"].iloc[0]
+            annotations = []
+            for mask_name in annotation_mask_names:
+                annotations.append(
+                    image_annotations.query('ID =="' + fp + '"')[mask_name].iloc[0]
+                )
             self.add_image(
-                "point",
+                "Magrabia",
                 image_id=i,
-                path=os.path.join(image_path, fp),
+                path=path_img,
                 annotations=annotations,
-                orig_height=shape[0],
                 orig_width=shape[0],
+                orig_height=shape[1],
             )
 
     def image_reference(self, image_id):
@@ -218,11 +232,18 @@ class DetectorDataset(utils.Dataset):
         return image
 
     def load_mask(self, image_id):
-        info = self.image_info[image_id]
-        mask = cv2.imread(info["annotations"])
-        mask = resizeAndPad(mask, self.shape)
-        tab_mask = mask_fct(mask, self.shape[0], self.shape[1])
-        return tab_mask
+        n_classes = len(self.annotation_mask_names)
+        masks = np.zeros((self.shape[0], self.shape[1], n_classes))
+        for i in range(0, n_classes):
+            info = self.image_info[image_id]
+            mask = cv2.imread(info["annotations"][i])
+            mask = resizeAndPad(mask, self.shape)
+            mask = np.where(mask > 0, 1, 0)
+            masks[:, :, i] = mask[:, :, 0]
+
+        class_ids = [i + 1 for i in list(range(n_classes))]
+
+        return (masks, class_ids)
 
 
 def sorted_alphanumeric(data):

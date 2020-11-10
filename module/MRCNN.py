@@ -117,6 +117,8 @@ class Model:
             self.image_annotations,
             self.config.IMAGE_PATH,
             self.SHAPE,
+            class_names=list(self.config.MASK_PATHS.keys()),
+            annotation_mask_names=list(self.config.MASK_PATHS.keys()),
         )
         self.dataset_train.prepare()
 
