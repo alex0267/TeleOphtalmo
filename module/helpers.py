@@ -241,7 +241,7 @@ class DetectorDataset(utils.Dataset):
             mask = np.where(mask > 0, 1, 0)
             masks[:, :, i] = mask[:, :, 0]
 
-        class_ids = [i + 1 for i in list(range(n_classes))]
+        class_ids = np.array([i + 1 for i in list(range(n_classes))])
 
         return (masks, class_ids)
 
