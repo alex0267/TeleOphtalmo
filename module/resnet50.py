@@ -122,5 +122,5 @@ class Model:
         return self.learner.predict(open_image(img_path))
 
     def train(self):
-        self.model.fit_one_cycle(self.config.EPOCHS)
+        self.learner.fit_one_cycle(self.config.EPOCHS)
 
