@@ -153,7 +153,7 @@ class Branch3:
         best_model_path = model.get_best_model_path()
         config.IS_INFERENCE = True
         config.WEIGHTS_PATH = best_model_path
-        best_model = Model(config)
+        best_model = MRCNN.Model(config)
 
         return best_model
 
