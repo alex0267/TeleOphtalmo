@@ -1,18 +1,18 @@
 import unittest
 from typing import List
 
-from skimage import io
 import numpy as np
 import pandas as pd
+from skimage import io
 
 
 # monkey patch cv2.imread before import helpers
 def imread_mock(path):
-    return [
+    return np.array([
         [[1, 0, 0, 0], [0, 0, 1, 0]],
         [[1, 0, 0, 0], [0, 1, 0, 0]],
         [[0, 1, 0, 0], [0, 0, 1, 0]],
-    ]
+    ])
 
 
 io.imread = imread_mock
