@@ -9,9 +9,9 @@ from skimage import io
 # monkey patch cv2.imread before import helpers
 def imread_mock(path):
     return np.array([
-        [[1, 0, 0, 0], [0, 0, 1, 0]],
-        [[1, 0, 0, 0], [0, 1, 0, 0]],
-        [[0, 1, 0, 0], [0, 0, 1, 0]],
+        [[1, 0, 0], [0, 0, 1]],
+        [[1, 0, 0], [0, 1, 0]],
+        [[0, 1, 0], [0, 0, 1]],
     ])
 
 
@@ -27,9 +27,9 @@ class MRCNNModelMock:
 
     def detect(self, images: List[str], verbose: int = 1):
         masks = np.array([
+            [[1, 0, 0, 0, 0], [0, 1, 1, 0, 1]],
             [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
-            [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
-            [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
+            [[1, 0, 0, 0, 0], [0, 1, 1, 0, 0]],
         ])
         res = {
             "rois": [i for i in range(5)],
@@ -57,8 +57,7 @@ class TestHelpers(unittest.TestCase):
         )
         col_names = ["A", "B"]
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
-        print(result)
-        # self.assertEqual(result == 2)
+        self.assertEqual(result == [[1.0], [0.5]])
 
 
 if __name__ == "__main__":
