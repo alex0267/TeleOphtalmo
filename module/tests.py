@@ -4,7 +4,7 @@ import cv2
 import helpers
 import numpy as np
 import pandas as pd
-from typings import List
+from typing import List
 
 
 # monkey patch cv2.imread
