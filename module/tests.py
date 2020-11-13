@@ -1,7 +1,7 @@
 import unittest
 from typing import List
 
-import cv2
+from skimage import io
 import numpy as np
 import pandas as pd
 
@@ -15,7 +15,7 @@ def imread_mock(path):
     ]
 
 
-cv2.imread = imread_mock
+io.imread = imread_mock
 
 
 import helpers
