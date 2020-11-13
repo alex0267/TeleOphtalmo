@@ -57,7 +57,7 @@ class TestHelpers(unittest.TestCase):
         )
         col_names = ["A", "B"]
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
-        self.assertEqual(result == [[1.0], [0.5]])
+        self.assertEqual(result, [[1.0], [0.5]])
 
 
 if __name__ == "__main__":
