@@ -322,7 +322,7 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
             print(path)
 
 
-def mrcnn_iou_eval(model, anns):
+def mrcnn_iou_eval_old(model, anns):
     """
     Evaluation of the roi and masks provided by the mrcnn model
 
@@ -353,6 +353,46 @@ def mrcnn_iou_eval(model, anns):
         list_iou.append(iou_score)
 
     return list_iou
+
+
+def mrcnn_iou_eval(model, anns, n_masks, col_names):
+    """
+    Evaluation of the roi and masks provided by the mrcnn model
+
+    model: the model we want to evaluate
+    anns: a dataframe with the filepaths of the evaluation images and masks.
+
+    The output is:
+    list_iou: a list of iou values
+    n_masks: (int) number of masks
+    col_names: (list(string)) name of the mask annotation columns
+    """
+    spec = [([], col_names[i]) for i in range(n_masks)]
+    for idx in range(len(anns)):
+        path = anns.loc[idx, "Paths"]
+        img = imread(path)
+        img_detect = img.copy()
+        results = model.detect([img_detect], verbose=1)
+        r = results[0]
+
+        for i, spec_entry in enumerate(spec):
+            list_iou, col_name = spec_entry
+            if r.get("class_ids")[0] == i:
+                mask_org = imread(anns.loc[idx, col_name])
+                mask_org = np.where(mask_org > 0, 1, 0)
+
+                target = mask_org[:, :, 2]
+                prediction = r.get("masks")[:, :, 0]
+
+                intersection = np.logical_and(target, prediction)
+                union = np.logical_or(target, prediction)
+                iou_score = np.sum(intersection) / np.sum(union)
+
+                list_iou.append(iou_score)
+            else:
+                list_iou.append(0)
+
+    return [spec_entry[0] for spec_entry in spec]
 
 
 def train_valid_split(data_dir, healthy_name, glaucoma_name):

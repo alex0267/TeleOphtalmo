@@ -200,8 +200,14 @@ class Model:
         )
 
     def get_iou_score(self):
-        list_iou = mrcnn_iou_eval(self.model, self.image_annotations)
-        return sum(list_iou) / len(list_iou)
+        n_masks = len(self.config.MASK_PATHS)
+        col_names = list(self.config.MASK_PATHS.keys())
+        list_ious = mrcnn_iou_eval(
+            self.model, self.image_annotations, n_masks, col_names
+        )
+        return sum([sum(list_iou) for list_iou in list_ious]) / sum(
+            [len(list_iou) for list_iou in list_ious]
+        )
 
     def infer(self, img_path):
         img = imread(img_path)
