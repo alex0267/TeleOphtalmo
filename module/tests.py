@@ -1,13 +1,12 @@
 import unittest
-
-import cv2
-import helpers
-import numpy as np
-import pandas as pd
 from typing import List
 
+import cv2
+import numpy as np
+import pandas as pd
 
-# monkey patch cv2.imread
+
+# monkey patch cv2.imread before import helpers
 def imread_mock(path):
     return [
         [[1, 0, 0, 0], [0, 0, 1, 0]],
@@ -17,6 +16,9 @@ def imread_mock(path):
 
 
 cv2.imread = imread_mock
+
+
+import helpers
 
 
 class MRCNNModelMock:
