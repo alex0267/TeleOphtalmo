@@ -53,7 +53,7 @@ class TestHelpers(unittest.TestCase):
             [
                 ["Some_Path", 2, 3],
             ],
-            columns=["Paths", "B", "B"],
+            columns=["Paths", "A", "B"],
         )
         col_names = ["A", "B"]
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
