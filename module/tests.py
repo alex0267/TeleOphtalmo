@@ -26,16 +26,16 @@ class MRCNNModelMock:
         pass
 
     def detect(self, images: List[str], verbose: int = 1):
-        mock_mask = [
-            [[1, 0, 0, 0], [0, 0, 1, 0]],
-            [[1, 0, 0, 0], [0, 1, 0, 0]],
-            [[1, 0, 0, 0], [0, 0, 0, 1]],
-        ]
+        masks = np.array([
+            [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
+            [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
+            [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]],
+        ])
         res = {
             "rois": [i for i in range(5)],
             "class_ids": [1, 2, 1, 2, 2],
             "scores": [0.2, 0.7, 0.9, 0.1, 0.95],
-            "masks": np.array([mock_mask for _ in range(5)]),
+            "masks": masks,
         }
         return [res for i in images]
 
