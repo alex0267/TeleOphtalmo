@@ -53,9 +53,9 @@ class TestHelpers(unittest.TestCase):
             [
                 ["Some_Path", 2, 3],
             ],
-            columns=["A", "B", "C"],
+            columns=["Paths", "B", "B"],
         )
-        col_names = ["classA", "classB"]
+        col_names = ["A", "B"]
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
         print(result)
         # self.assertEqual(result == 2)
