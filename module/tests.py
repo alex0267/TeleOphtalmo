@@ -42,7 +42,7 @@ class MRCNNModelMock:
 
 class TestHelpers(unittest.TestCase):
     def test_filter_best_mrcnn_results(self):
-        result = MRCNNModelMock().detect([])
+        result = MRCNNModelMock().detect(["some_image"])[0]
         self.assertEqual(helpers.get_best_mrcnn_result_index_for_class(result, 1), 2)
         self.assertEqual(helpers.get_best_mrcnn_result_index_for_class(result, 2), 4)
 
