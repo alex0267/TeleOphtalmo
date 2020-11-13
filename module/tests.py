@@ -111,7 +111,7 @@ class TestHelpers(unittest.TestCase):
 
         model = MRCNNModelMock(mrcnn_mock_mode["DISC_ONLY"])
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
-        self.assertEqual(result, [[1.0], [0]])
+        self.assertEqual(result, [[0.5], [0]])
 
         model = MRCNNModelMock(mrcnn_mock_mode["CUP_ONLY"])
         result = helpers.mrcnn_iou_eval(model, annotations, n_mask_classes, col_names)
