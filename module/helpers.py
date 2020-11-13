@@ -386,19 +386,19 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
         img = imread(path)
         img_detect = img.copy()
         results = model.detect([img_detect], verbose=1)
-        r = results[0]
+        result = results[0]
 
         for i, spec_entry in enumerate(spec):
             class_id = i + 1
             list_iou, col_name = spec_entry
-            class_ids = r.get("class_ids")
+            class_ids = result.get("class_ids")
             if class_id in class_ids:
-                best_class_score_index = get_best_mrcnn_result_index_for_class(r, class_id)
+                best_class_score_index = get_best_mrcnn_result_index_for_class(result, class_id)
                 mask_org = imread(anns.loc[idx, col_name])
                 mask_org = np.where(mask_org > 0, 1, 0)
 
                 target = mask_org[:, :, 2]
-                prediction = r.get("masks")[:, :, best_class_score_index]
+                prediction = result.get("masks")[:, :, best_class_score_index]
 
                 intersection = np.logical_and(target, prediction)
                 union = np.logical_or(target, prediction)
