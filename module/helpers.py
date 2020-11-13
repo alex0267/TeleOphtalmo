@@ -355,6 +355,19 @@ def mrcnn_iou_eval_old(model, anns):
     return list_iou
 
 
+def get_best_mrcnn_result_index_for_class(mrcnn_result_entry, class_id):
+    """given an mrcnn result entry, returns the index of the best score for
+    given class."""
+    best_index = None
+    best_score = 0
+    for i, score in enumerate(mrcnn_result_entry.get("scores")):
+        if mrcnn_result_entry.get("class_ids")[i] == class_id:
+            if score > best_score:
+                best_score = score
+                best_index = i
+    return best_index
+
+
 def mrcnn_iou_eval(model, anns, n_masks, col_names):
     """
     Evaluation of the roi and masks provided by the mrcnn model
@@ -376,13 +389,16 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
         r = results[0]
 
         for i, spec_entry in enumerate(spec):
+            class_id = i + 1
             list_iou, col_name = spec_entry
-            if r.get("class_ids")[0] == i:
+            class_ids = r.get("class_ids")
+            if class_id in class_ids:
+                best_class_score_index = get_best_mrcnn_result_index_for_class(r, class_id)
                 mask_org = imread(anns.loc[idx, col_name])
                 mask_org = np.where(mask_org > 0, 1, 0)
 
                 target = mask_org[:, :, 2]
-                prediction = r.get("masks")[:, :, 0]
+                prediction = r.get("masks")[:, :, best_class_score_index]
 
                 intersection = np.logical_and(target, prediction)
                 union = np.logical_or(target, prediction)
