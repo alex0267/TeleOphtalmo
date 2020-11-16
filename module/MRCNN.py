@@ -1,13 +1,14 @@
+import json
 import os
-from shutil import copyfile
 from dataclasses import dataclass, field
+from shutil import copyfile
 from typing import Dict
 
 import mrcnn.model as modellib
 import numpy as np
 import tensorflow as tf
 from helpers import (COLORS, DetectorDataset, create_cropped_image,
-                     create_pathology_dataframe, mrcnn_iou_eval)
+                     create_pathology_dataframe, mmod, mrcnn_iou_eval)
 from keras.backend.tensorflow_backend import set_session
 from mrcnn.config import Config as MRCNNConfig
 from skimage.io import imread
@@ -220,3 +221,19 @@ class Model:
         img = imread(img_path)
         img_detect = img.copy()
         return self.model.detect([img_detect], verbose=1)
+
+    def export_dataset_output_dictionary(self, export_path: str):
+        train, val, anns = self.split_dataframe()
+        for dataset, filename in [
+            (train, "train_dic.json"),
+            (val, "valid_dic.json"),
+        ]:
+            result_dict = mmod(
+                self.model,
+                [
+                    os.path.join(self.config.IMAGE_PATH, filename)
+                    for filename in dataset
+                ],
+            )
+            with open(os.path.join(export_path, filename), "w") as f:
+                json.dump(result_dict, f)

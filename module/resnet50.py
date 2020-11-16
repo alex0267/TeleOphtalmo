@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 
@@ -44,6 +45,7 @@ class Config:
       - if not IS_INFERENCE: directory to save model in
     MODEL_NAME: name of model to load when infering
     """
+
     freeze: FreezeConfig = FreezeConfig()
     TRAIN_DATA_PATH_ROOT: str = ""
     INFERENCE_DATA_PATH_ROOT: str = ""
@@ -118,9 +120,21 @@ class Model:
         else:
             return fmod(self.learner, self.data.valid_ds.items)
 
+    def export_dataset_output_dictionary(self, export_path: str):
+        if self.config.TRAIN_DATA_PATH_ROOT:
+            data = self.load_train_data()
+            for dataset, filename in [
+                (data.train_ds, "train_dic.json"),
+                (data.valid_ds, "valid_dic.json"),
+            ]:
+                result_dict = fmod(self.learner, dataset.items)
+                with open(os.path.join(export_path, filename), "w") as f:
+                    json.dump(result_dict, f)
+        else:
+            print("Please set the TRAIN_DATA_PATH_ROOT configuration attibute.")
+
     def infer(self, img_path: str):
         return self.learner.predict(open_image(img_path))
 
     def train(self):
         self.learner.fit_one_cycle(self.config.EPOCHS)
-
