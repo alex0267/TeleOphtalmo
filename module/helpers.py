@@ -359,7 +359,9 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
             list_iou, col_name = spec_entry
             class_ids = result.get("class_ids")
             if class_id in class_ids:
-                best_class_score_index = get_best_mrcnn_result_index_for_class(result, class_id)
+                best_class_score_index = get_best_mrcnn_result_index_for_class(
+                    result, class_id
+                )
                 mask_org = imread(anns.loc[idx, col_name])
                 mask_org = np.where(mask_org > 0, 1, 0)
 
