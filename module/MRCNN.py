@@ -1,6 +1,7 @@
 import json
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from shutil import copyfile
 from typing import Dict
 
@@ -187,8 +188,8 @@ class Model:
         return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
 
     def back_up_best_model(self):
-        best_model_path = self.get_best_model_path()
-        target_path = os.path.join(os.path.dirname(best_model_path), "best_model.h5")
+        best_model_path = Path(self.get_best_model_path())
+        target_path = os.path.join(best_model_path.parent.parent, "best_model.h5")
         copyfile(best_model_path, target_path)
 
     def create_cropped_image(self):
