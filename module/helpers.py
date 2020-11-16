@@ -11,11 +11,10 @@ from imgaug import augmenters as iaa
 from mrcnn import utils
 from skimage.io import imread
 
-
 COLORS = {
-    'blue': 0,
-    'green': 1,
-    'red': 2,
+    "blue": 0,
+    "green": 1,
+    "red": 2,
 }
 
 
@@ -163,7 +162,7 @@ def create_pathology_dataframe(image_path, mask_paths):
     files_image = os.listdir(image_path)
     images = []
     for path in files_image:
-        if path != '.ipynb_checkpoints': #temp fix to a bug
+        if path != ".ipynb_checkpoints":  # temp fix to a bug
             path = os.path.join(image_path, path)
             images.append(path)
             images.sort()
@@ -178,7 +177,7 @@ def create_pathology_dataframe(image_path, mask_paths):
         files = os.listdir(mask_path)
         masks = []
         for path in files:
-            if path != '.ipynb_checkpoints': #temp fix to a bug
+            if path != ".ipynb_checkpoints":  # temp fix to a bug
                 path = os.path.join(mask_path, path)
                 masks.append(path)
                 masks.sort()
@@ -320,39 +319,6 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         print("The following files were skipped:")
         for path in skipped_files:
             print(path)
-
-
-def mrcnn_iou_eval_old(model, anns):
-    """
-    Evaluation of the roi and masks provided by the mrcnn model
-
-    model: the model we want to evaluate
-    anns: a dataframe with the filepaths of the evaluation images and masks.
-
-    The output is:
-    list_iou: a list of iou values
-    """
-
-    list_iou = []
-    for idx in range(len(anns)):
-        path = anns.loc[idx, "Path"]
-        img = imread(path)
-        img_detect = img.copy()
-        results = model.detect([img_detect], verbose=1)
-
-        mask_disc_org = cv2.imread(anns.loc[idx, "Paths_mask"])
-        mask_disc_org = np.where(mask_disc_org > 0, 1, 0)
-
-        target = mask_disc_org[:, :, 2]
-        prediction = results[0]["masks"][:, :, 0]
-
-        intersection = np.logical_and(target, prediction)
-        union = np.logical_or(target, prediction)
-        iou_score = np.sum(intersection) / np.sum(union)
-
-        list_iou.append(iou_score)
-
-    return list_iou
 
 
 def get_best_mrcnn_result_index_for_class(mrcnn_result_entry, class_id):
