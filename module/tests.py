@@ -68,7 +68,7 @@ class TestHelpers(unittest.TestCase):
         model = MRCNNModelMock(mrcnn_mock_mode["DISC_AND_CUP"])
         filenames = ["Some_Path"]
         result_dict, list_failed_images = helpers.mmod(model, filenames)
-        self.assertEqual(result_dict[filenames[0]], 2 / 1)
+        self.assertEqual(result_dict[filenames[0]], 1 / 2)
 
         model = MRCNNModelMock(mrcnn_mock_mode["DISC_ONLY"])
         result_dict, list_failed_images = helpers.mmod(model, filenames)
