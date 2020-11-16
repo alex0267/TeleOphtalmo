@@ -460,3 +460,65 @@ def mmod(model, filenames):
             )
 
     return result_dic, list_failed_images
+
+
+def mrcnn_b3_eval(model, anns, disc_annotation_colname, cup_annotation_colname):
+    """
+    Evaluation of the mask provided by the mrcnn model
+    by comparing the square error of the cup/disc ratio
+    of the annotated images compared to the infered masks.
+
+    model: the model we want to evaluate
+    anns: a dataframe with the filepaths of the evaluation images and masks.
+
+    The output of the function are:
+    df: a dataframe with the error between the ratio
+    list_failed_images: a list of images where the model couldn't find a disc and a cup
+    """
+    df = pd.DataFrame(columns=["ID", "ann", "inf", "err"])
+    list_failed_images = []
+    for idx in range(len(anns)):
+        path = anns.loc[idx, "Paths"]
+        temp_dic = {}
+        img = imread(path)
+        img_detect = img.copy()
+        results = model.detect([img_detect], verbose=1)
+        r = results[0]
+
+        # Checking if both disc and cup where found
+        if len(np.unique(r.get("class_ids"))) == 2:
+            best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
+            best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
+            disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
+            cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+            ratio = cup_pixel_sum / disc_pixel_sum
+            temp_dic["ID"] = anns.loc[idx, "ID"]
+            temp_dic["inf"] = ratio
+
+            mask_disc_org = imread(anns.loc[idx, disc_annotation_colname])
+            mask_disc_org = np.where(mask_disc_org > 0, 1, 0)
+            disc_pixel_sum_org = sum(sum(mask_disc_org[:, :, 0]))
+
+            mask_cup_org = imread(anns.loc[idx, cup_annotation_colname])
+            mask_cup_org = np.where(mask_cup_org > 0, 1, 0)
+            cup_pixel_sum_org = sum(sum(mask_cup_org[:, :, 0]))
+
+            ratio_org = cup_pixel_sum_org / disc_pixel_sum_org
+
+            temp_dic["ann"] = ratio_org
+
+            square_error = (ratio - ratio_org) * (ratio - ratio_org)
+            absolute_error = square_error ** (1 / 2)
+            temp_dic["err"] = absolute_error
+
+            df = df.append(temp_dic, ignore_index=True)
+
+        else:
+            list_failed_images.append(anns.loc[idx, "ID"])
+            print(
+                "For picture {0} the model did not found a disc and a cup. class_ids: {1}".format(
+                    path, r.get("class_ids")
+                )
+            )
+
+    return df, list_failed_images

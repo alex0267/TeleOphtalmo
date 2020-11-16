@@ -64,6 +64,44 @@ class MRCNNModelMock:
 
 
 class TestHelpers(unittest.TestCase):
+    def test_mrcnn_b3_eval(self):
+        annotations = pd.DataFrame(
+            [
+                ["Some_Path", 2, 3, 1],
+            ],
+            columns=["Paths", "A", "B", "ID"],
+        )
+
+        model = MRCNNModelMock(mrcnn_mock_mode["DISC_AND_CUP"])
+        filenames = ["Some_Path"]
+        result_df, list_failed_images = helpers.mrcnn_b3_eval(
+            model, annotations, "A", "B"
+        )
+        self.assertEqual(result_df[result_df["ID" == 1]]["inf"], 1 / 2)
+        self.assertEqual(result_df[result_df["ID" == 1]]["ann"], 2 / 2)
+        self.assertEqual(result_df[result_df["ID" == 1]]["err"], 0.5)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["DISC_ONLY"])
+        result_df, list_failed_images = helpers.mrcnn_b3_eval(
+            model, annotations, "A", "B"
+        )
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_df), 0)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["CUP_ONLY"])
+        result_df, list_failed_images = helpers.mrcnn_b3_eval(
+            model, annotations, "A", "B"
+        )
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_df), 0)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["NOTHING"])
+        result_df, list_failed_images = helpers.mrcnn_b3_eval(
+            model, annotations, "A", "B"
+        )
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_df), 0)
+
     def test_mmod(self):
         model = MRCNNModelMock(mrcnn_mock_mode["DISC_AND_CUP"])
         filenames = ["Some_Path"]
