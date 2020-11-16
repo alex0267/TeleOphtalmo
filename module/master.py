@@ -143,6 +143,7 @@ class Branch3:
     def get_infer_config(self):
         config = self.get_train_config()
         config.IS_INFERENCE = True
+        config.WEIGHTS_PATH = "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
         return config
 
     def train(self):
