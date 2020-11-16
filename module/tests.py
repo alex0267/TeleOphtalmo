@@ -64,6 +64,27 @@ class MRCNNModelMock:
 
 
 class TestHelpers(unittest.TestCase):
+    def test_mmod(self):
+        model = MRCNNModelMock(mrcnn_mock_mode["DISC_AND_CUP"])
+        filenames = ["Some_Path"]
+        result_dict, list_failed_images = helpers.mmod(model, filenames)
+        self.assertEqual(result_dict[filenames[0]], 2 / 1)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["DISC_ONLY"])
+        result_dict, list_failed_images = helpers.mmod(model, filenames)
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_dict), 0)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["CUP_ONLY"])
+        result_dict, list_failed_images = helpers.mmod(model, filenames)
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_dict), 0)
+
+        model = MRCNNModelMock(mrcnn_mock_mode["NOTHING"])
+        result_dict, list_failed_images = helpers.mmod(model, filenames)
+        self.assertEqual(list_failed_images, filenames)
+        self.assertEqual(len(result_dict), 0)
+
     def test_filter_best_mrcnn_results(self):
         result = MRCNNModelMock(mrcnn_mock_mode["DISC_AND_CUP"]).detect(["some_image"])[
             0

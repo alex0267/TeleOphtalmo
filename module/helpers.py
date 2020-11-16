@@ -424,3 +424,39 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
                 os.path.join(glaucoma_path, filename),
                 os.path.join(data_dir, "valid", glaucoma_name, filename),
             )
+
+
+def mmod(model, filenames):
+    """
+    fmod stands for: M_askRcnn M_odel O_utput D_ictionary
+
+    This function takes as its arguments a maskrcnn model and a list of images path.
+    The function returns a dictionary with the images name as the key and the ratio of
+    cup to disc as the associated value
+    """
+    result_dic = {}
+    list_failed_images = []
+    for path in filenames:
+        img = imread(path)
+        img_detect = img.copy()
+        results = model.detect([img_detect], verbose=1)
+        r = results[0]
+        img_name = path.split(".")[0].split("/")[-1]
+
+        # Checking if both disc and cup where found
+        if len(np.unique(r.get("class_ids"))) == 2:
+            best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
+            best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
+            disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
+            cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+            ratio = cup_pixel_sum / disc_pixel_sum
+            result_dic[img_name] = ratio
+        else:
+            list_failed_images.append(img_name)
+            print(
+                "For picture {0} the model did not found a disc and a cup. class_ids: {1}".format(
+                    path, r.get("class_ids")
+                )
+            )
+
+    return result_dic, list_failed_images
