@@ -1,4 +1,5 @@
 import os
+from shutil import copyfile
 from dataclasses import dataclass, field
 from typing import Dict
 
@@ -173,6 +174,7 @@ class Model:
             augmentation=None,
         )
         self.history = self.model.keras_model.history.history
+        self.back_up_best_model()
 
     def get_best_epoch(self):
         best_epoch = np.argmin(self.history["val_loss"])
@@ -182,6 +184,11 @@ class Model:
     def get_best_model_path(self):
         model_number = str(self.get_best_epoch()[0]).zfill(4)
         return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
+
+    def back_up_best_model(self):
+        best_model_path = self.get_best_model_path()
+        target_path = os.path.join(os.path.dirname(best_model_path), "best_model.h5")
+        copyfile(best_model_path, target_path)
 
     def create_cropped_image(self):
         create_cropped_image(
