@@ -115,49 +115,6 @@ def resizeAndPad(img, size, padColor=0):
     return scaled_img
 
 
-def imshow_components(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, labels = cv2.connectedComponents(gray)
-    # Map component labels to hue val
-    label_hue = np.uint8(179 * labels / np.max(labels))
-    blank_ch = 255 * np.ones_like(label_hue)
-    labeled_img = cv2.merge([label_hue, blank_ch, blank_ch])
-
-    # cvt to BGR for display
-    labeled_img = cv2.cvtColor(labeled_img, cv2.COLOR_HSV2BGR)
-    labeled_img[label_hue == 0] = 0
-    return labeled_img
-
-
-def mask_fct(img, WIDTH, LENGTH):
-    """Two fonction for create binary mask for keras"""
-    img = imshow_components(img)
-    colors = np.unique(img.reshape(-1, img.shape[-1]), axis=0)
-    colors = colors[1:]
-    masks = None
-    save_img = img.copy()
-    for index, color in enumerate(colors):
-        img = save_img.copy()
-        mask = (img == color).all(axis=2)
-        img[np.invert(mask)] = [0, 0, 0]
-        img = img.astype(bool)
-        mask = np.logical_or.reduce(img, axis=2)
-        if index == 0:
-            masks = mask.copy()
-            masks = np.reshape(masks, (WIDTH, LENGTH, 1))
-        else:
-            masks = np.dstack((masks, mask))
-    class_ids = np.zeros((len(colors)), dtype=np.int32)
-    class_ids[:] = 1
-    return (masks, class_ids)
-
-
-def rename(row):
-    if "flip" in row:
-        return row[:-12] + "_flip.jpg"
-    return row[:-7] + ".jpg"
-
-
 def create_pathology_dataframe(image_path, mask_paths):
     files_image = os.listdir(image_path)
     images = []
