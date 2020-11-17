@@ -80,3 +80,32 @@ python
 # Troubleshooting
 
 Please contact me via Slack or tbinetruy@wewyse.com if you run into touble ;)
+
+# Development
+
+- branch 1
+  + [x] train resnet50 and save best model
+  + [x] load resnet50 model and export output dictionary
+  + [x] infer list of images
+  + [ ] score loaded model
+- branch 2
+  + [x] train mrcnn and save best model
+  + [x] load mrcnn model and generate dataset for resnet50
+  + [x] train resnet50 on generated dataset and save best model
+  + [x] load resnet50 model and export output dictionary
+  + [x] infer list of images
+  + [ ] score loaded model
+- branch 3
+  + [x] train mrcnn and save best model
+  + [x] load mrcnn model and export output dictionary
+  + [x] infer list of images
+  + [ ] score loaded model
+- logreg
+  + [x] train logistic regression and save best model
+  + [x] load logreg model
+  + [x] infer list of images
+  + [ ] score loaded model
+- master model
+  + [x] train all models in a single method
+  + [ ] infer list of images
+  + [ ] score overall model
