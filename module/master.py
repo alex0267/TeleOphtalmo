@@ -12,8 +12,8 @@ class Branch1:
     def __init__(self):
         pass
 
-    def train(self):
-        config = resnet50.Config(
+    def get_train_config(self):
+        return resnet50.Config(
             resnet50.FreezeConfig(
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
                 FREEZE_TO=-2,
@@ -22,17 +22,23 @@ class Branch1:
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
             EPOCHS=N_EPOCHS,
         )
-        model = resnet50.Model(config)
-        model.train()
-        return model
 
-    def infer(self):
-        config = resnet50.Config(
+    def get_infer_config(self):
+        return resnet50.Config(
             INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid/Glaucoma",
             IS_INFERENCE=True,
             MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
             MODEL_NAME="best_model.pkl",
         )
+
+    def train(self):
+        config = self.get_train_config()
+        model = resnet50.Model(config)
+        model.train()
+        return model
+
+    def infer(self):
+        config = self.get_infer_config()
         return resnet50.Model(config).get_results()
 
 
@@ -40,7 +46,7 @@ class Branch2:
     def __init__(self):
         pass
 
-    def train_mrcnn(self):
+    def get_mrcnn_train_config(self):
         DATA_DIR = f"{HOME}/Second_branch/data_train_mrcnn/"
         cropped_image_config = MRCNN.CroppedImageConfig(
             INPUT_PATH_GLAUCOMA="/home/jupyter/Data/Glaucoma/",
@@ -50,13 +56,13 @@ class Branch2:
             OUTPUT_PATH_GLAUCOMA="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/glaucoma/",
             OUTPUT_PATH_HEALTHY="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/healthy/",
         )
-        config = MRCNN.Config(
+        return MRCNN.Config(
             IS_INFERENCE=False,
             USE_GPU=True,
             DEBUG=True,
             WIDTH=1024,
             NUM_CLASSES=2,
-            MASK_COLOR=helpers.COLORS['red'],
+            MASK_COLOR=helpers.COLORS["red"],
             MASK_PATHS={
                 "Disc": os.path.join(
                     DATA_DIR,
@@ -72,6 +78,28 @@ class Branch2:
             EPOCHS=N_EPOCHS,
             cropped_image=cropped_image_config,
         )
+
+    def get_train_config(self):
+        return resnet50.Config(
+            resnet50.FreezeConfig(
+                FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
+                FREEZE_TO=-2,
+            ),
+            TRAIN_DATA_PATH_ROOT="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/",
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
+            EPOCHS=N_EPOCHS,
+        )
+
+    def get_infer_config(self):
+        return resnet50.Config(
+            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
+            IS_INFERENCE=True,
+            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
+            MODEL_NAME="best_model.pkl",
+        )
+
+    def train_mrcnn(self):
+        config = self.get_mrcnn_train_config()
         model = MRCNN.Model(config)
         model.train()
 
@@ -86,26 +114,13 @@ class Branch2:
         self.train_mrcnn().create_cropped_image()
 
     def train(self):
-        config = resnet50.Config(
-            resnet50.FreezeConfig(
-                FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
-                FREEZE_TO=-2,
-            ),
-            TRAIN_DATA_PATH_ROOT="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/",
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
-            EPOCHS=N_EPOCHS,
-        )
+        config = self.get_train_config()
         model = resnet50.Model(config)
         model.train()
         return model
 
     def infer(self):
-        config = resnet50.Config(
-            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
-            IS_INFERENCE=True,
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
-            MODEL_NAME="best_model.pkl",
-        )
+        config = self.get_infer_config()
         model = resnet50.Model(config)
         return model.get_results()
 
@@ -122,7 +137,7 @@ class Branch3:
             DEBUG=True,
             WIDTH=1024,
             NUM_CLASSES=3,
-            MASK_COLOR=helpers.COLORS['blue'],
+            MASK_COLOR=helpers.COLORS["blue"],
             MASK_PATHS={
                 "Disc": os.path.join(
                     DATA_DIR,
@@ -143,7 +158,9 @@ class Branch3:
     def get_infer_config(self):
         config = self.get_train_config()
         config.IS_INFERENCE = True
-        config.WEIGHTS_PATH = "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
+        config.WEIGHTS_PATH = (
+            "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
+        )
         return config
 
     def train(self):
