@@ -176,7 +176,7 @@ class Branch3:
         return best_model
 
     def infer(self):
-        config = self.get_inference_config()
+        config = self.get_infer_config()
         model = MRCNN.Model(config)
         export_path = "/home/thomas/TeleOphtalmo/module/output/b3"
         return model.export_dataset_output_dictionary(export_path)
