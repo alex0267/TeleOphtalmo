@@ -29,7 +29,7 @@ class Branch1:
         config.IS_INFERENCE = True
         config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid/Glaucoma"
         config.MODEL_NAME = "best_model.pkl"
-        return resnet50.Config(config)
+        return config
 
     def train(self):
         config = self.get_train_config()
@@ -96,7 +96,7 @@ class Branch2:
         config.INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid"
         config.IS_INFERENCE = True
         config.MODEL_NAME="best_model.pkl"
-        return resnet50.Config(config)
+        return config
 
     def train_mrcnn(self):
         config = self.get_mrcnn_train_config()
