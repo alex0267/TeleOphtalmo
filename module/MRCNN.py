@@ -231,7 +231,7 @@ class Model:
             (train, "train_dic.json"),
             (val, "valid_dic.json"),
         ]:
-            result_dict = mmod(
+            result_dict, failed_images = mmod(
                 self.model,
                 [
                     os.path.join(self.config.IMAGE_PATH, filename)
