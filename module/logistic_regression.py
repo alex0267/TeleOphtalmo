@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import json
 import pickle
 from dataclasses import dataclass
@@ -179,6 +181,8 @@ class Model:
             self.branch3_valid_dic = json.load(json_file)
 
     def export_model(self):
+        model_path = Path(self.config.MODEL_PATH)
+        os.makedirs(model_path.parent, exist_ok=True)
         pickle.dump(self.model, open(self.config.MODEL_PATH, "wb"))
 
     def load_model(self):
