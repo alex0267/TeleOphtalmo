@@ -93,9 +93,9 @@ class Branch2:
 
     def get_infer_config(self):
         config = self.get_train_config()
-        config.INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid"
+        config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid"
         config.IS_INFERENCE = True
-        config.MODEL_NAME="best_model.pkl"
+        config.MODEL_NAME = "best_model.pkl"
         return config
 
     def train_mrcnn(self):
@@ -158,7 +158,9 @@ class Branch3:
     def get_infer_config(self):
         config = self.get_train_config()
         config.IS_INFERENCE = True
-        config.WEIGHTS_PATH = "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
+        config.WEIGHTS_PATH = (
+            "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
+        )
         return config
 
     def train(self):
