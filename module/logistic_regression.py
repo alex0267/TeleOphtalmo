@@ -103,6 +103,7 @@ class Model:
             self.init_dataset()
 
     def init_dataset(self):
+        self.load_all_json()
         branch1_train = Branch_dataset(
             self.branch1_dic, ["score1"], "_", True, 0, 2, True, 3, 0
         )
