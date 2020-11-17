@@ -88,11 +88,17 @@ class Config:
     PATH_3_VAL: str = ""
     N_BRANCHES: int = 3
     MODEL_PATH: str = ""
+    IS_INFERENCE: bool = False
 
 
 class Model:
     def __init__(self, config: Config):
         self.config = config
+
+        if self.config.IS_INFERENCE:
+            self.load_model()
+        else:
+            self.init_dataset()
 
     def init_dataset(self):
         branch1_train = Branch_dataset(
@@ -142,6 +148,8 @@ class Model:
 
         self.model = LogisticRegression()
         self.model.fit(X, y)
+
+        self.export_model()
 
     def score(self):
         cols = self.get_dataset_col_names()

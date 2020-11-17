@@ -1,6 +1,7 @@
 import os
 
 import helpers
+import logistic_regression
 import MRCNN
 import resnet50
 
@@ -181,11 +182,44 @@ class Branch3:
         return model.infer()
 
 
+class LogReg:
+    def __init__(self):
+        pass
+
+    def get_train_config(self):
+        HOME = "/home/thomas/TeleOphtalmo/module/"
+        return logistic_regression.Config(
+            PATH_1_TRAIN=os.path.join(HOME, "branch1_dic.json"),
+            PATH_1_VAL=os.path.join(HOME, "branch1_val_dic.json"),
+            PATH_2_TRAIN=os.path.join(HOME, "branch2_dic.json"),
+            PATH_2_VAL=os.path.join(HOME, "branch2_val_dic.json"),
+            PATH_3_TRAIN=os.path.join(HOME, "branch3_dic.json"),
+            PATH_3_VAL=os.path.join(HOME, "branch3_val_dic.json"),
+            N_BRANCHES=3,
+            MODEL_PATH=os.path.join(HOME, "models", "logreg"),
+            IS_INFERENCE=False,
+        )
+
+    def get_infer_config(self):
+        config = self.get_train_config()
+        config.IS_INFERENCE = True
+        return config
+
+    def train(self):
+        model = logistic_regression.Model(self.get_train_config())
+        model.train()
+
+    def infer(self, X):
+        model = logistic_regression.Model(self.get_infer_config())
+        return model.perdict(X)
+
+
 class Model:
     def __init__(self):
         self.branch1 = Branch1()
         self.branch2 = Branch2()
         self.branch3 = Branch3()
+        self.logreg = LogReg()
 
     def prepare_branch2_dataset(self):
         self.branch2.crop_images()
@@ -196,15 +230,23 @@ class Model:
         )
 
     def train(self):
-        self.branch1.train()
-        self.branch2.train()
-        self.branch3.train()
+        HOME = "/home/thomas/TeleOphtalmo/module/"
+
+        b1 = self.branch1.train()
+        b1.export_dataset_output_dictionary(HOME)
+        b2 = self.branch2.train()
+        b2.export_dataset_output_dictionary(HOME)
+        b3 = self.branch3.train()
+        b3.export_dataset_output_dictionary(HOME)
+        self.logreg.train()
 
     def infer(self):
         results_branch1 = self.branch1.infer()
         results_branch2 = self.branch2.infer()
         results_branch3 = self.branch3.infer()
-        return [results_branch1, results_branch2, results_branch3]
+        X = [[results_branch1, results_branch2, results_branch3]]
+        # TODO handle 2 vs 3 branches logreg inference
+        return self.logreg.infer(X)
 
 
 if __name__ == "__main__":
