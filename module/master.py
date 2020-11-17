@@ -25,12 +25,11 @@ class Branch1:
         )
 
     def get_infer_config(self):
-        return resnet50.Config(
-            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid/Glaucoma",
-            IS_INFERENCE=True,
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
-            MODEL_NAME="best_model.pkl",
-        )
+        config = self.get_train_config()
+        config.IS_INFERENCE = True
+        config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid/Glaucoma"
+        config.MODEL_NAME = "best_model.pkl"
+        return resnet50.Config(config)
 
     def train(self):
         config = self.get_train_config()
@@ -93,12 +92,11 @@ class Branch2:
         )
 
     def get_infer_config(self):
-        return resnet50.Config(
-            INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid",
-            IS_INFERENCE=True,
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
-            MODEL_NAME="best_model.pkl",
-        )
+        config = self.get_train_config()
+        config.INFERENCE_DATA_PATH_ROOT="/home/jupyter/Data/valid"
+        config.IS_INFERENCE = True
+        config.MODEL_NAME="best_model.pkl"
+        return resnet50.Config(config)
 
     def train_mrcnn(self):
         config = self.get_mrcnn_train_config()
