@@ -120,7 +120,8 @@ class Model:
         else:
             return fmod(self.learner, self.data.valid_ds.items)
 
-    def export_dataset_output_dictionary(self, export_path: str):
+    def export_dataset_output_dictionary(self, export_dir: str):
+        os.makedirs(export_dir, exist_ok=True)
         if self.config.TRAIN_DATA_PATH_ROOT:
             data = self.load_train_data()
             for dataset, filename in [
@@ -128,7 +129,7 @@ class Model:
                 (data.valid_ds, "valid_dic.json"),
             ]:
                 result_dict = fmod(self.learner, dataset.items)
-                with open(os.path.join(export_path, filename), "w") as f:
+                with open(os.path.join(export_dir, filename), "w") as f:
                     json.dump(result_dict, f)
         else:
             print("Please set the TRAIN_DATA_PATH_ROOT configuration attibute.")

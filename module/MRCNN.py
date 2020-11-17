@@ -223,7 +223,9 @@ class Model:
         img_detect = img.copy()
         return self.model.detect([img_detect], verbose=1)
 
-    def export_dataset_output_dictionary(self, export_path: str):
+    def export_dataset_output_dictionary(self, export_dir: str):
+        os.makedirs(export_dir, exist_ok=True)
+
         train, val, anns = self.split_dataframe()
         for dataset, filename in [
             (train, "train_dic.json"),
@@ -236,5 +238,5 @@ class Model:
                     for filename in dataset
                 ],
             )
-            with open(os.path.join(export_path, filename), "w") as f:
+            with open(os.path.join(export_dir, filename), "w") as f:
                 json.dump(result_dict, f)

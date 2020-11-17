@@ -40,7 +40,8 @@ class Branch1:
 
     def infer(self):
         config = self.get_infer_config()
-        return resnet50.Model(config).get_results()
+        export_path = "/home/thomas/TeleOphtalmo/module/output/b1"
+        return resnet50.Model(config).export_dataset_output_dictionary(export_path)
 
 
 class Branch2:
@@ -122,8 +123,8 @@ class Branch2:
 
     def infer(self):
         config = self.get_infer_config()
-        model = resnet50.Model(config)
-        return model.get_results()
+        export_path = "/home/thomas/TeleOphtalmo/module/output/b2"
+        return resnet50.Model(config).export_dataset_output_dictionary(export_path)
 
 
 class Branch3:
@@ -179,7 +180,8 @@ class Branch3:
     def infer(self):
         config = self.get_inference_config()
         model = MRCNN.Model(config)
-        return model.infer()
+        export_path = "/home/thomas/TeleOphtalmo/module/output/b3"
+        return model.export_dataset_output_dictionary(export_path)
 
 
 class LogReg:
