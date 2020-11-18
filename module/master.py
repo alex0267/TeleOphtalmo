@@ -1,3 +1,4 @@
+import glob
 import os
 
 import helpers
@@ -178,8 +179,15 @@ class Branch3:
     def infer(self):
         config = self.get_infer_config()
         model = MRCNN.Model(config)
+
+        train_paths = glob.glob("/homes/jupyter/Data/train/Glaucoma/*")
+        train_paths += glob.glob("/homes/jupyter/Data/train/Healthy/*")
+        valid_paths = glob.glob("/homes/jupyter/Data/valid/Glaucoma/*")
+        valid_paths += glob.glob("/homes/jupyter/Data/valid/Healthy/*")
         export_path = "/home/thomas/TeleOphtalmo/module/output/b3"
-        return model.export_dataset_output_dictionary(export_path)
+        model.export_dataset_output_dictionary(
+            export_path, train_paths, valid_paths
+        )
 
 
 class LogReg:

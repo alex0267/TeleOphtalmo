@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import copyfile
-from typing import Dict
+from typing import Dict, List
 
 import mrcnn.model as modellib
 import numpy as np
@@ -223,20 +223,18 @@ class Model:
         img_detect = img.copy()
         return self.model.detect([img_detect], verbose=1)
 
-    def export_dataset_output_dictionary(self, export_dir: str):
+    def export_dataset_output_dictionary(
+        self, export_dir: str, train_paths: List[str], valid_paths: List[str]
+    ):
         os.makedirs(export_dir, exist_ok=True)
 
-        train, val, anns = self.split_dataframe()
-        for dataset, filename in [
-            (train, "train_dic.json"),
-            (val, "valid_dic.json"),
+        for data_files, filename in [
+            (train_paths, "train_dic.json"),
+            (valid_paths, "valid_dic.json"),
         ]:
             result_dict, failed_images = mmod(
                 self.model,
-                [
-                    os.path.join(self.config.IMAGE_PATH, filename)
-                    for filename in dataset
-                ],
+                data_files,
             )
             with open(os.path.join(export_dir, filename), "w") as f:
                 json.dump(result_dict, f)
