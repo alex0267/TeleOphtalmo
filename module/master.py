@@ -180,10 +180,10 @@ class Branch3:
         config = self.get_infer_config()
         model = MRCNN.Model(config)
 
-        train_paths = glob.glob("/homes/jupyter/Data/train/Glaucoma/*")
-        train_paths += glob.glob("/homes/jupyter/Data/train/Healthy/*")
-        valid_paths = glob.glob("/homes/jupyter/Data/valid/Glaucoma/*")
-        valid_paths += glob.glob("/homes/jupyter/Data/valid/Healthy/*")
+        train_paths = glob.glob("/home/jupyter/Data/train/Glaucoma/*")
+        train_paths += glob.glob("/home/jupyter/Data/train/Healthy/*")
+        valid_paths = glob.glob("/home/jupyter/Data/valid/Glaucoma/*")
+        valid_paths += glob.glob("/home/jupyter/Data/valid/Healthy/*")
         export_path = "/home/thomas/TeleOphtalmo/module/output/b3"
         model.export_dataset_output_dictionary(
             export_path, train_paths, valid_paths
