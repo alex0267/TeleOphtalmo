@@ -2,6 +2,8 @@ import glob
 import os
 from dataclasses import dataclass
 from shutil import copyfile
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
 
 import helpers
 import logistic_regression
@@ -49,16 +51,15 @@ class Model:
         self.logreg = logistic_regression.Model(config.logreg)
 
     def setup_gpu(self):
-        if self.config.USE_GPU:
-            config = tf.ConfigProto()
-            config.gpu_options.allow_growth = True
-            config.log_device_placement = True
-            sess = tf.Session(config=config)
-            set_session(sess)
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.log_device_placement = True
+        sess = tf.Session(config=config)
+        set_session(sess)
 
 
     def export_branch2_dataset(self):
-        self.cropper.crop_images()
+        self.cropper.create_cropped_image()
         helpers.train_valid_split(
             self.branch2.config.TRAIN_DATA_PATH_ROOT,
             "healthy",
