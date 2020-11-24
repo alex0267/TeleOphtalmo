@@ -7,6 +7,7 @@ import logistic_regression
 
 HOME = "/home/jupyter"
 N_EPOCHS = 2
+USE_PRODUCTION_MODEL = True
 
 
 class Branch1:
@@ -25,7 +26,11 @@ class Branch1:
         config = self.train()
         config.IS_INFERENCE = True
         config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid/Glaucoma"
-        config.MODEL_NAME = "best_model.pkl"
+        if USE_PRODUCTION_MODEL:
+            config.MODEL_DIR = os.path.join(HOME, "All_final_models/1st_branch")
+            config.MODEL_NAME = "export.pkl"
+        else:
+            config.MODEL_NAME = "best_model.pkl"
         return config
 
 
@@ -45,7 +50,11 @@ class Branch2:
         config = self.train()
         config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid"
         config.IS_INFERENCE = True
-        config.MODEL_NAME = "best_model.pkl"
+        if USE_PRODUCTION_MODEL:
+            config.MODEL_DIR = os.path.join(HOME, "All_final_models/2d_branch")
+            config.MODEL_NAME = "export.pkl"
+        else:
+            config.MODEL_NAME = "best_model.pkl"
         return config
 
 
@@ -107,6 +116,12 @@ class Cropper:
     def infer(self):
         config = self.train()
         config.IS_INFERENCE=True
+        if USE_PRODUCTION_MODEL:
+            config.WEIGHTS_PATH = os.path.join(HOME, "All_final_models/mrcnn_b2.h5")
+        else:
+            config.WEIGHTS_PATH = (
+                "/home/thomas/TeleOphtalmo/module/models/branch2/best_model.h5"
+            )
         return config
 
 
@@ -140,7 +155,10 @@ class Ratio:
     def infer(self):
         config = self.train()
         config.IS_INFERENCE = True
-        config.WEIGHTS_PATH = (
-            "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
-        )
+        if USE_PRODUCTION_MODEL:
+            config.WEIGHTS_PATH = os.path.join(HOME, "All_final_models/mrcnn_b3.h5")
+        else:
+            config.WEIGHTS_PATH = (
+                "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
+            )
         return config
