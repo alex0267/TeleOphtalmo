@@ -22,7 +22,7 @@ class Branch1:
         )
 
     def infer(self):
-        config = self.get_train_config()
+        config = self.train()
         config.IS_INFERENCE = True
         config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid/Glaucoma"
         config.MODEL_NAME = "best_model.pkl"
@@ -50,7 +50,7 @@ class Branch2:
 
 
 class LogReg:
-    def trainn(self):
+    def train(self):
         HOME = "/home/thomas/TeleOphtalmo/module/"
         return logistic_regression.Config(
             PATH_1_TRAIN=os.path.join(HOME, "output", "b1", "train_dic.json"),
@@ -64,7 +64,7 @@ class LogReg:
             IS_INFERENCE=False,
         )
 
-    def get_infer_config(self):
+    def infer(self):
         config = self.train()
         config.IS_INFERENCE = True
         return config
@@ -104,9 +104,14 @@ class Cropper:
             cropped_image=cropped_image_config,
         )
 
+    def infer(self):
+        config = self.train()
+        config.IS_INFERENCE=True
+        return config
+
 
 class Ratio:
-    def get_train_config(self):
+    def train(self):
         DATA_DIR = f"{HOME}/Third_branch/mask_for_maskrcnn/"
         return MRCNN.Config(
             IS_INFERENCE=False,
@@ -132,7 +137,7 @@ class Ratio:
             EPOCHS=N_EPOCHS,
         )
 
-    def get_infer_config(self):
+    def infer(self):
         config = self.train()
         config.IS_INFERENCE = True
         config.WEIGHTS_PATH = (

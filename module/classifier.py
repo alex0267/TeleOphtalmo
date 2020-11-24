@@ -3,11 +3,11 @@ import os
 from dataclasses import dataclass
 from shutil import copyfile
 
-import feature_engineering
 import helpers
 import logistic_regression
 import MRCNN
 import resnet50
+import config
 
 HOME = "/home/jupyter"
 N_EPOCHS = 2
@@ -22,18 +22,45 @@ class Config:
     logreg: logistic_regression.Config
 
 
+train_config = Config(
+    branch1=config.Branch1().train(),
+    branch2=config.Branch2().train(),
+    cropper=config.Cropper().train(),
+    ratio=config.Ratio().train(),
+    logreg=config.LogReg().train(),
+)
+infer_config = Config(
+    branch1=config.Branch1().infer(),
+    branch2=config.Branch2().infer(),
+    cropper=config.Cropper().infer(),
+    ratio=config.Ratio().infer(),
+    logreg=config.LogReg().infer(),
+)
+
+
 class Model:
     def __init__(self, config: Config):
+        self.setup_gpu()
+
         self.branch1 = resnet50.Model(config.branch1)
         self.branch2 = resnet50.Model(config.branch2)
-        self.cropper = MRCNN.Model(config.cropper)
         self.ratio = MRCNN.Model(config.ratio)
+        self.cropper = MRCNN.Model(config.cropper)
         self.logreg = logistic_regression.Model(config.logreg)
+
+    def setup_gpu(self):
+        if self.config.USE_GPU:
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            config.log_device_placement = True
+            sess = tf.Session(config=config)
+            set_session(sess)
+
 
     def export_branch2_dataset(self):
         self.cropper.crop_images()
         helpers.train_valid_split(
-            "/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA",
+            self.branch2.config.TRAIN_DATA_PATH_ROOT,
             "healthy",
             "glaucoma",
         )
