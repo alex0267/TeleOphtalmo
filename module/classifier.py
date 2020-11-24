@@ -2,6 +2,7 @@ import glob
 import os
 from dataclasses import dataclass
 from shutil import copyfile
+import shutil
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 
@@ -93,11 +94,17 @@ class Model:
     def crop_image(self, img_path):
         # move image to /tmp
         base_name = os.path.basename(img_path)
-        tmp_img_path = os.path.join("/tmp", base_name)
+
+        tmp_dir = "/tmp/teleophtalmo"
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
+        os.makedirs(tmp_dir)
+
+        tmp_img_path = os.path.join(tmp_dir, base_name)
         copyfile(img_path, tmp_img_path)
 
         cropped_image_path = helpers.create_cropped_image(
-            self.cropper, "/tmp", base_name, "/tmp", self.cropper.SHAPE
+            self.cropper.model, tmp_dir, base_name, tmp_dir, self.cropper.SHAPE
         )
 
         # TODO remove tmp_img_path
@@ -111,7 +118,7 @@ class Model:
         if cropped_img_path:
             results_branch1 = self.branch1.infer(img_path)
             results_branch2 = self.branch2.infer(cropped_img_path)
-            success, ratio = helpers.cup_to_disc_ratio(self.ratio, img_path)
+            success, ratio = helpers.cup_to_disc_ratio(self.ratio.model, img_path)
             if success:
                 X = [[results_branch1, results_branch2, ratio]]
             else:

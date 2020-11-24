@@ -234,9 +234,9 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         print("===> ", name)
 
         try:
-            img = imread(path + name)
+            img = imread(os.path.join(path, name))
         except ValueError:
-            skipped_files.append(path + name)
+            skipped_files.append(os.path.join(path, name))
             continue
 
         img_detect = img.copy()
@@ -248,24 +248,13 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         # visualize the results
         r = results[0]
         if r["rois"].size > 0:  # if Roi is found.
-            # visualize.display_instances(img, r['rois'], r['masks'], r['class_ids'], ['BG', 'point'], r['scores'],
-            #                 )
             y, x, h, w = r["rois"][0]
-            # cropped_image = tf.image.crop_to_bounding_box(img, y-30, x-30, y-(y-30) , x-(x-30))
-            # print(cropped_image)
-            # plt.imshow(cropped_image)
-            # crop_img = img[y:y+h, x:x+w]
-            # plt.imshow("cropped", crop_img)
-            # cv2.imread(cropped_image)
             y, x = y - 30, x - 30
             h, w = h + 30, w + 30
             roi = img[y:h, x:w, :]
             roi_resized = resizeAndPad(roi, shape)
-            # print(roi_resized.shape)
-            # plt.imshow(roi_resized)
-            # plt.imshow(roi)
             i = int(name.split("_")[0][2:6])
-            target_path = output_path + name_path + "_roi_resized_{0}.png".format(i)
+            target_path = os.path.join(output_path, name_path + "_roi_resized_{0}.png".format(i))
             cropped_image_paths.append(target_path)
             cv2.imwrite(
                 target_path,
