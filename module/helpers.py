@@ -229,6 +229,7 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
     # print(images)
 
     skipped_files = []
+    cropped_image_paths = []
     for name in images:
         print("===> ", name)
 
@@ -264,8 +265,10 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
             # plt.imshow(roi_resized)
             # plt.imshow(roi)
             i = int(name.split("_")[0][2:6])
+            target_path = output_path + name_path + "_roi_resized_{0}.png".format(i)
+            cropped_image_paths.append(target_path)
             cv2.imwrite(
-                output_path + name_path + "_roi_resized_{0}.png".format(i),
+                target_path,
                 cv2.cvtColor(roi_resized, cv2.COLOR_RGB2BGR),
             )
 
@@ -276,6 +279,8 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         print("The following files were skipped:")
         for path in skipped_files:
             print(path)
+
+    return cropped_image_paths
 
 
 def get_best_mrcnn_result_index_for_class(mrcnn_result_entry, class_id):
@@ -383,6 +388,23 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
             )
 
 
+def cup_to_disc_ratio(model, file_path):
+    img = imread(file_path)
+    img_detect = img.copy()
+    results = model.detect([img_detect], verbose=1)
+    r = results[0]
+
+    # Checking if both disc and cup where found
+    if len(np.unique(r.get("class_ids"))) == 2:
+        best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
+        best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
+        disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
+        cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+        return True, cup_pixel_sum / disc_pixel_sum
+    else:
+        return False, r.get("class_ids")
+
+
 def mmod(model, filenames):
     """
     fmod stands for: M_askRcnn M_odel O_utput D_ictionary
@@ -394,25 +416,19 @@ def mmod(model, filenames):
     result_dic = {}
     list_failed_images = []
     for path in filenames:
-        img = imread(path)
-        img_detect = img.copy()
-        results = model.detect([img_detect], verbose=1)
-        r = results[0]
-        img_name = path.split(".")[0].split("/")[-1]
+        result = cup_to_disc_ratio(model, path)
 
         # Checking if both disc and cup where found
-        if len(np.unique(r.get("class_ids"))) == 2:
-            best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
-            best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
-            disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
-            cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
-            ratio = cup_pixel_sum / disc_pixel_sum
+        if result[0]:
+            ratio = result[1]
+            img_name = path.split(".")[0].split("/")[-1]
             result_dic[img_name] = ratio
         else:
+            class_ids = result[1]
             list_failed_images.append(img_name)
             print(
                 "For picture {0} the model did not found a disc and a cup. class_ids: {1}".format(
-                    path, r.get("class_ids")
+                    path, class_ids
                 )
             )
 
