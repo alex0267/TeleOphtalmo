@@ -22,7 +22,8 @@ class Config:
     branch2: resnet50.Config
     cropper: MRCNN.Config
     ratio: MRCNN.Config
-    logreg: logistic_regression.Config
+    logreg_3b: logistic_regression.Config
+    logreg_2b: logistic_regression.Config
 
 
 train_config = Config(
@@ -30,14 +31,16 @@ train_config = Config(
     branch2=config.Branch2().train(),
     cropper=config.Cropper().train(),
     ratio=config.Ratio().train(),
-    logreg=config.LogReg().train(),
+    logreg_3b=config.LogReg().train_3b(),
+    logreg_2b=config.LogReg().train_2b(),
 )
 infer_config = Config(
     branch1=config.Branch1().infer(),
     branch2=config.Branch2().infer(),
     cropper=config.Cropper().infer(),
     ratio=config.Ratio().infer(),
-    logreg=config.LogReg().infer(),
+    logreg_3b=config.LogReg().infer_3b(),
+    logreg_2b=config.LogReg().infer_2b(),
 )
 
 
@@ -49,7 +52,8 @@ class Model:
         self.branch2 = resnet50.Model(config.branch2)
         self.ratio = MRCNN.Model(config.ratio)
         self.cropper = MRCNN.Model(config.cropper)
-        self.logreg = logistic_regression.Model(config.logreg)
+        self.logreg_3b = logistic_regression.Model(config.logreg_3b)
+        self.logreg_2b = logistic_regression.Model(config.logreg_2b)
 
     def setup_gpu(self):
         config = tf.ConfigProto()
@@ -61,6 +65,9 @@ class Model:
 
     def export_branch2_dataset(self):
         self.cropper.create_cropped_image()
+
+        # TODO clean split folders
+
         helpers.train_valid_split(
             self.branch2.config.TRAIN_DATA_PATH_ROOT,
             "healthy",
@@ -89,7 +96,8 @@ class Model:
         self.branch1.train()
         self.branch2.train()
         self.make_logreg_dataset()
-        self.logreg.train()
+        self.logreg_2b.train()
+        self.logreg_3b.train()
 
     def crop_image(self, img_path):
         # move image to /tmp
@@ -107,22 +115,24 @@ class Model:
             self.cropper.model, tmp_dir, base_name, tmp_dir, self.cropper.SHAPE
         )
 
-        # TODO remove tmp_img_path
         if len(cropped_image_path) == 1:
             return cropped_image_path[0]
         else:
             return None
 
     def infer(self, img_path):
-        cropped_img_path = self.cropper.infer(img_path)
+        cropped_img_path = self.crop_image(img_path)
         if cropped_img_path:
             results_branch1 = self.branch1.infer(img_path)
             results_branch2 = self.branch2.infer(cropped_img_path)
             success, ratio = helpers.cup_to_disc_ratio(self.ratio.model, img_path)
             if success:
-                X = [[results_branch1, results_branch2, ratio]]
+                print("===> 3b")
+                X = [[results_branch1[2][0], results_branch2[2][0], ratio]]
+                return self.logreg_3b.model.predict(X), self.logreg_3b.model.predict_proba(X)
             else:
-                X = [[results_branch1, results_branch2]]
-            return self.logreg.infer(X)
+                print("===> 2b")
+                X = [[results_branch1[2][0], results_branch2[2][0]]]
+                return self.logreg_2b.model.predict(X), self.logreg_2b.model.predict_proba(X)
         else:
             return None
