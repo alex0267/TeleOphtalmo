@@ -229,13 +229,14 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
     # print(images)
 
     skipped_files = []
+    cropped_image_paths = []
     for name in images:
         print("===> ", name)
 
         try:
-            img = imread(path + name)
+            img = imread(os.path.join(path, name))
         except ValueError:
-            skipped_files.append(path + name)
+            skipped_files.append(os.path.join(path, name))
             continue
 
         img_detect = img.copy()
@@ -247,25 +248,16 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         # visualize the results
         r = results[0]
         if r["rois"].size > 0:  # if Roi is found.
-            # visualize.display_instances(img, r['rois'], r['masks'], r['class_ids'], ['BG', 'point'], r['scores'],
-            #                 )
             y, x, h, w = r["rois"][0]
-            # cropped_image = tf.image.crop_to_bounding_box(img, y-30, x-30, y-(y-30) , x-(x-30))
-            # print(cropped_image)
-            # plt.imshow(cropped_image)
-            # crop_img = img[y:y+h, x:x+w]
-            # plt.imshow("cropped", crop_img)
-            # cv2.imread(cropped_image)
             y, x = y - 30, x - 30
             h, w = h + 30, w + 30
             roi = img[y:h, x:w, :]
             roi_resized = resizeAndPad(roi, shape)
-            # print(roi_resized.shape)
-            # plt.imshow(roi_resized)
-            # plt.imshow(roi)
             i = int(name.split("_")[0][2:6])
+            target_path = os.path.join(output_path, name_path + "_roi_resized_{0}.png".format(i))
+            cropped_image_paths.append(target_path)
             cv2.imwrite(
-                output_path + name_path + "_roi_resized_{0}.png".format(i),
+                target_path,
                 cv2.cvtColor(roi_resized, cv2.COLOR_RGB2BGR),
             )
 
@@ -276,6 +268,8 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
         print("The following files were skipped:")
         for path in skipped_files:
             print(path)
+
+    return cropped_image_paths
 
 
 def get_best_mrcnn_result_index_for_class(mrcnn_result_entry, class_id):
@@ -337,50 +331,69 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
 
 
 def train_valid_split(data_dir, healthy_name, glaucoma_name):
-    healthy_path = os.path.join(data_dir, healthy_name)
-    glaucoma_path = os.path.join(data_dir, glaucoma_name)
-    list_healthy = os.listdir(healthy_path)
-    list_glaucoma = os.listdir(glaucoma_path)
+    # The list of Origa images in the train files
+    list_healthy_train_1 = os.listdir("/home/jupyter/Data/train/Healthy")
+    list_glaucoma_train_1 = os.listdir("/home/jupyter/Data/train/Glaucoma")
 
-    train_healthy_target_path = os.path.join(data_dir, "train", healthy_name)
-    train_glaucoma_target_path = os.path.join(data_dir, "train", glaucoma_name)
-    valid_healthy_target_path = os.path.join(data_dir, "valid", healthy_name)
-    valid_glaucoma_target_path = os.path.join(data_dir, "valid", glaucoma_name)
+    # The pictures ID of the images in the train files
+    list_train_healthy = [int(pth.split("_")[0][3:]) for pth in list_healthy_train_1]
+    list_train_glaucoma = [int(pth.split("_")[0][3:]) for pth in list_glaucoma_train_1]
+
+    # All images resized for the second branch
+    list_healthy_2 = os.listdir(os.path.join(data_dir, healthy_name))
+    list_glaucoma_2 = os.listdir(os.path.join(data_dir, glaucoma_name))
+
+    # Putting in the valid folder only the images that are in the valid folder of the 1st branch
+    path_healthy = os.path.join(data_dir, healthy_name)
+    path_healthy_train = os.path.join(data_dir, "train", healthy_name)
+    path_healthy_valid = os.path.join(data_dir, "valid", healthy_name)
+
     for path in [
-        train_healthy_target_path,
-        train_glaucoma_target_path,
-        valid_healthy_target_path,
-        valid_glaucoma_target_path,
+        path_healthy_train,
+        path_healthy_valid,
     ]:
         os.makedirs(path, exist_ok=True)
 
-    # Putting 386 pictures in the training folder
-    # 482 healthy images *.8 = 386
-    for i, filename in enumerate(list_healthy):
-        if i < 386:
-            shutil.copyfile(
-                os.path.join(healthy_path, filename),
-                os.path.join(data_dir, "train", healthy_name, filename),
-            )
+    for im in list_healthy_2:
+        im_index = int(im.split("_")[3][:-4])
+        if im_index in list_train_healthy:
+            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_train,im))
         else:
-            shutil.copyfile(
-                os.path.join(healthy_path, filename),
-                os.path.join(data_dir, "valid", healthy_name, filename),
-            )
+            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_valid,im))
 
-    # Putting 134 pictures in the training folder
-    # 168 glaucoma images *.8 = 134
-    for i, filename in enumerate(list_glaucoma):
-        if i < 134:
-            shutil.copyfile(
-                os.path.join(glaucoma_path, filename),
-                os.path.join(data_dir, "train", glaucoma_name, filename),
-            )
+    path_glaucoma = os.path.join(data_dir, glaucoma_name)
+    path_glaucoma_train = os.path.join(data_dir, "train", glaucoma_name)
+    path_glaucoma_valid = os.path.join(data_dir, "valid", glaucoma_name)
+
+    for path in [
+        path_glaucoma_train,
+        path_glaucoma_valid,
+    ]:
+        os.makedirs(path, exist_ok=True)
+
+    for im in list_glaucoma_2:
+        im_index = int(im.split("_")[3][:-4])
+        if im_index in list_train_glaucoma:
+            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_train,im))
         else:
-            shutil.copyfile(
-                os.path.join(glaucoma_path, filename),
-                os.path.join(data_dir, "valid", glaucoma_name, filename),
-            )
+            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_valid,im))
+
+
+def cup_to_disc_ratio(model, file_path):
+    img = imread(file_path)
+    img_detect = img.copy()
+    results = model.detect([img_detect], verbose=1)
+    r = results[0]
+
+    # Checking if both disc and cup where found
+    if len(np.unique(r.get("class_ids"))) == 2:
+        best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
+        best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
+        disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
+        cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+        return True, cup_pixel_sum / disc_pixel_sum
+    else:
+        return False, r.get("class_ids")
 
 
 def mmod(model, filenames):
@@ -394,25 +407,19 @@ def mmod(model, filenames):
     result_dic = {}
     list_failed_images = []
     for path in filenames:
-        img = imread(path)
-        img_detect = img.copy()
-        results = model.detect([img_detect], verbose=1)
-        r = results[0]
-        img_name = path.split(".")[0].split("/")[-1]
+        result = cup_to_disc_ratio(model, path)
 
         # Checking if both disc and cup where found
-        if len(np.unique(r.get("class_ids"))) == 2:
-            best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
-            best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
-            disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
-            cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
-            ratio = cup_pixel_sum / disc_pixel_sum
+        if result[0]:
+            ratio = result[1]
+            img_name = path.split(".")[0].split("/")[-1]
             result_dic[img_name] = ratio
         else:
+            class_ids = result[1]
             list_failed_images.append(img_name)
             print(
                 "For picture {0} the model did not found a disc and a cup. class_ids: {1}".format(
-                    path, r.get("class_ids")
+                    path, class_ids
                 )
             )
 

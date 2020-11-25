@@ -85,18 +85,9 @@ class Model:
         self.config = config
         self.SHAPE = (config.WIDTH, config.WIDTH)
         self.mrcnn_config = MyMRCNNConfig(config)
-        self.setup_gpu()
         if not self.config.IS_INFERENCE:
             self.init_dataset()
         self.init_model()
-
-    def setup_gpu(self):
-        if self.config.USE_GPU:
-            config = tf.ConfigProto()
-            config.gpu_options.allow_growth = True
-            config.log_device_placement = True
-            sess = tf.Session(config=config)
-            set_session(sess)
 
     def split_dataframe(self):
         """Split dataframe 80/20 train/test"""

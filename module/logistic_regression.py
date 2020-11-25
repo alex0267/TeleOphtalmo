@@ -160,7 +160,7 @@ class Model:
         X_val = self.multibranch_valid_df[cols]
         y_val = self.multibranch_valid_df["Y"]
 
-        return self.logreg_3branches.score(X_val, y_val)
+        return self.model.score(X_val, y_val)
 
     def load_all_json(self):
         with open(self.config.PATH_1_TRAIN) as json_file:
