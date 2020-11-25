@@ -136,3 +136,45 @@ class Model:
                 return self.logreg_2b.model.predict(X), self.logreg_2b.model.predict_proba(X)
         else:
             return None
+
+    def score(self, data_dir="/home/jupyter/Data/valid/"):
+        path_healthy = os.listdir(os.path.join(data_dir, "Healthy"))
+        path_glaucoma = os.listdir(os.path.join(data_dir, "Glaucoma"))
+
+        healthy_class_id = 0
+        glaucoma_class_id = 1
+
+        scores_healthy = []
+        for file_name in path_healthy:
+            print(scores_healthy)
+            if file_name == '.ipynb_checkpoints':
+                continue
+            else:
+                file_path = os.path.join(data_dir, "Healthy", file_name)
+                class_id = self.infer(file_path)[0][0]
+                if class_id == healthy_class_id:
+                    scores_healthy.append(1)
+                else:
+                    scores_healthy.append(0)
+        score_healthy = sum(scores_healthy) / len(scores_healthy)
+
+        scores_glaucoma = []
+        for file_name in path_glaucoma:
+            print(scores_glaucoma)
+            if file_name == '.ipynb_checkpoints':
+                continue
+            else:
+                file_path = os.path.join(data_dir, "Glaucoma", file_name)
+                class_id = self.infer(file_path)[0][0]
+                if class_id == glaucoma_class_id:
+                    scores_glaucoma.append(1)
+                else:
+                    scores_glaucoma.append(0)
+        score_glaucoma = sum(scores_glaucoma) / len(scores_glaucoma)
+
+        return {
+            "score_healthy": score_healthy,
+            "score_glaucoma": score_glaucoma,
+        }
+
+
