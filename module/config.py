@@ -59,7 +59,7 @@ class Branch2:
 
 
 class LogReg:
-    def train(self):
+    def train_3b(self):
         HOME = "/home/thomas/TeleOphtalmo/module/"
         return logistic_regression.Config(
             PATH_1_TRAIN=os.path.join(HOME, "output", "b1", "train_dic.json"),
@@ -73,8 +73,20 @@ class LogReg:
             IS_INFERENCE=False,
         )
 
-    def infer(self):
-        config = self.train()
+    def infer_3b(self):
+        config = self.train_3b()
+        config.IS_INFERENCE = True
+        return config
+
+    def train_2b(self):
+        HOME = "/home/thomas/TeleOphtalmo/module/"
+        config = self.train_3b()
+        config.N_BRANCHES = 2
+        config.MODEL_PATH = os.path.join(HOME, "models", "logreg", "classifier_2b.sav")
+        return config
+
+    def infer_2b(self):
+        config = self.train_2b()
         config.IS_INFERENCE = True
         return config
 

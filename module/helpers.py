@@ -331,50 +331,52 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
 
 
 def train_valid_split(data_dir, healthy_name, glaucoma_name):
-    healthy_path = os.path.join(data_dir, healthy_name)
-    glaucoma_path = os.path.join(data_dir, glaucoma_name)
-    list_healthy = os.listdir(healthy_path)
-    list_glaucoma = os.listdir(glaucoma_path)
+    # The list of Origa images in the train files
+    list_healthy_train_1 = os.listdir("/home/jupyter/Data/train/Healthy")
+    list_glaucoma_train_1 = os.listdir("/home/jupyter/Data/train/Glaucoma")
 
-    train_healthy_target_path = os.path.join(data_dir, "train", healthy_name)
-    train_glaucoma_target_path = os.path.join(data_dir, "train", glaucoma_name)
-    valid_healthy_target_path = os.path.join(data_dir, "valid", healthy_name)
-    valid_glaucoma_target_path = os.path.join(data_dir, "valid", glaucoma_name)
+    # The pictures ID of the images in the train files
+    list_train_healthy = [int(pth.split("_")[0][3:]) for pth in list_healthy_train_1]
+    list_train_glaucoma = [int(pth.split("_")[0][3:]) for pth in list_glaucoma_train_1]
+
+    # All images resized for the second branch
+    list_healthy_2 = os.listdir(os.path.join(data_dir, healthy_name))
+    list_glaucoma_2 = os.listdir(os.path.join(data_dir, glaucoma_name))
+
+    # Putting in the valid folder only the images that are in the valid folder of the 1st branch
+    path_healthy = os.path.join(data_dir, healthy_name)
+    path_healthy_train = os.path.join(data_dir, "train", healthy_name)
+    path_healthy_valid = os.path.join(data_dir, "valid", healthy_name)
+
     for path in [
-        train_healthy_target_path,
-        train_glaucoma_target_path,
-        valid_healthy_target_path,
-        valid_glaucoma_target_path,
+        path_healthy_train,
+        path_healthy_valid,
     ]:
         os.makedirs(path, exist_ok=True)
 
-    # Putting 386 pictures in the training folder
-    # 482 healthy images *.8 = 386
-    for i, filename in enumerate(list_healthy):
-        if i < 386:
-            shutil.copyfile(
-                os.path.join(healthy_path, filename),
-                os.path.join(data_dir, "train", healthy_name, filename),
-            )
+    for im in list_healthy_2:
+        im_index = int(im.split("_")[3][:-4])
+        if im_index in list_train_healthy:
+            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_train,im))
         else:
-            shutil.copyfile(
-                os.path.join(healthy_path, filename),
-                os.path.join(data_dir, "valid", healthy_name, filename),
-            )
+            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_valid,im))
 
-    # Putting 134 pictures in the training folder
-    # 168 glaucoma images *.8 = 134
-    for i, filename in enumerate(list_glaucoma):
-        if i < 134:
-            shutil.copyfile(
-                os.path.join(glaucoma_path, filename),
-                os.path.join(data_dir, "train", glaucoma_name, filename),
-            )
+    path_glaucoma = os.path.join(data_dir, glaucoma_name)
+    path_glaucoma_train = os.path.join(data_dir, "train", glaucoma_name)
+    path_glaucoma_valid = os.path.join(data_dir, "valid", glaucoma_name)
+
+    for path in [
+        path_glaucoma_train,
+        path_glaucoma_valid,
+    ]:
+        os.makedirs(path, exist_ok=True)
+
+    for im in list_glaucoma_2:
+        im_index = int(im.split("_")[3][:-4])
+        if im_index in list_train_glaucoma:
+            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_train,im))
         else:
-            shutil.copyfile(
-                os.path.join(glaucoma_path, filename),
-                os.path.join(data_dir, "valid", glaucoma_name, filename),
-            )
+            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_valid,im))
 
 
 def cup_to_disc_ratio(model, file_path):
