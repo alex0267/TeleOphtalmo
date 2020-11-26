@@ -44,24 +44,21 @@ infer_config = Config(
 )
 
 
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+config.log_device_placement = True
+sess = tf.Session(config=config)
+set_session(sess)
+
+
 class Model:
     def __init__(self, config: Config):
-        self.setup_gpu()
-
         self.branch1 = resnet50.Model(config.branch1)
         self.branch2 = resnet50.Model(config.branch2)
         self.ratio = MRCNN.Model(config.ratio)
         self.cropper = MRCNN.Model(config.cropper)
         self.logreg_3b = logistic_regression.Model(config.logreg_3b)
         self.logreg_2b = logistic_regression.Model(config.logreg_2b)
-
-    def setup_gpu(self):
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.log_device_placement = True
-        sess = tf.Session(config=config)
-        set_session(sess)
-
 
     def export_branch2_dataset(self):
         self.cropper.create_cropped_image()
