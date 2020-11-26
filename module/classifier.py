@@ -44,29 +44,61 @@ infer_config = Config(
 )
 
 
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+config.log_device_placement = True
+sess = tf.Session(config=config)
+set_session(sess)
+
+
 class Model:
     def __init__(self, config: Config):
-        self.setup_gpu()
+        self.config = config
 
-        self.branch1 = resnet50.Model(config.branch1)
-        self.branch2 = resnet50.Model(config.branch2)
-        self.ratio = MRCNN.Model(config.ratio)
-        self.cropper = MRCNN.Model(config.cropper)
-        self.logreg_3b = logistic_regression.Model(config.logreg_3b)
-        self.logreg_2b = logistic_regression.Model(config.logreg_2b)
+    @property
+    def branch1(self):
+        if not hasattr(self, '_branch1'):
+            self._branch1 = resnet50.Model(self.config.branch1)
 
-    def setup_gpu(self):
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        config.log_device_placement = True
-        sess = tf.Session(config=config)
-        set_session(sess)
+        return self._branch1
 
+    @property
+    def branch2(self):
+        if not hasattr(self, '_branch2'):
+            self._branch2 = resnet50.Model(self.config.branch2)
+
+        return self._branch2
+
+    @property
+    def ratio(self):
+        if not hasattr(self, '_ratio'):
+            self._ratio = MRCNN.Model(self.config.ratio)
+
+        return self._ratio
+
+    @property
+    def cropper(self):
+        if not hasattr(self, '_cropper'):
+            self._cropper = MRCNN.Model(self.config.cropper)
+
+        return self._cropper
+
+    @property
+    def logreg_2b(self):
+        if not hasattr(self, '_logreg_2b'):
+            self._logreg_2b = logistic_regression.Model(self.config.logreg_2b)
+
+        return self._logreg_2b
+
+    @property
+    def logreg_3b(self):
+        if not hasattr(self, '_logreg_3b'):
+            self._logreg_3b = logistic_regression.Model(self.config.logreg_3b)
+
+        return self._logreg_3b
 
     def export_branch2_dataset(self):
         self.cropper.create_cropped_image()
-
-        # TODO clean split folders
 
         helpers.train_valid_split(
             self.branch2.config.TRAIN_DATA_PATH_ROOT,
@@ -92,10 +124,11 @@ class Model:
         self.cropper.train()
         self.ratio.train()
 
-    def train(self):
+    def train_branches(self):
         self.branch1.train()
         self.branch2.train()
-        self.make_logreg_dataset()
+
+    def train_logreg(self):
         self.logreg_2b.train()
         self.logreg_3b.train()
 
@@ -178,3 +211,13 @@ class Model:
         }
 
 
+if __name__ == "__main__":
+    train_model = Model(train_config)
+    infer_model = Model(infer_config)
+
+    train_model.train_feature_engineering()
+    infer_model.export_branch2_dataset()
+    train_model.train_branches()
+    infer_model.make_logreg_dataset()
+    train_model.train_logreg()
+    infer_model.score()
