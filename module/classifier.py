@@ -124,10 +124,11 @@ class Model:
         self.cropper.train()
         self.ratio.train()
 
-    def train(self):
+    def train_branches(self):
         self.branch1.train()
         self.branch2.train()
-        self.make_logreg_dataset()
+
+    def train_logreg(self):
         self.logreg_2b.train()
         self.logreg_3b.train()
 
@@ -210,3 +211,13 @@ class Model:
         }
 
 
+if __name__ == "__main__":
+    train_model = Model(train_config)
+    infer_model = Model(infer_config)
+
+    train_model.train_feature_engineering()
+    infer_model.export_branch2_dataset()
+    train_model.train_branches()
+    infer_model.make_logreg_dataset()
+    train_model.train_logreg()
+    infer_model.score()
