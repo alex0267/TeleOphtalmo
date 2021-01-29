@@ -271,7 +271,9 @@ def create_cropped_image(
             roi = img[y:h, x:w, :]
             roi_resized = resizeAndPad(roi, shape)
             i = int(name.split("_")[0][2:6])
-            target_path = os.path.join(output_path, name_path + "_roi_resized_{0}.png".format(i))
+            target_path = os.path.join(
+                output_path, name_path + "_roi_resized_{0}.png".format(i)
+            )
             cropped_image_paths.append(target_path)
             cv2.imwrite(
                 target_path,
@@ -374,9 +376,13 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
     for im in list_healthy_2:
         im_index = int(im.split("_")[3][:-4])
         if im_index in list_train_healthy:
-            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_train,im))
+            shutil.copyfile(
+                os.path.join(path_healthy, im), os.path.join(path_healthy_train, im)
+            )
         else:
-            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_valid,im))
+            shutil.copyfile(
+                os.path.join(path_healthy, im), os.path.join(path_healthy_valid, im)
+            )
 
     path_glaucoma = os.path.join(data_dir, glaucoma_name)
     path_glaucoma_train = os.path.join(data_dir, "train", glaucoma_name)
@@ -391,9 +397,13 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
     for im in list_glaucoma_2:
         im_index = int(im.split("_")[3][:-4])
         if im_index in list_train_glaucoma:
-            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_train,im))
+            shutil.copyfile(
+                os.path.join(path_glaucoma, im), os.path.join(path_glaucoma_train, im)
+            )
         else:
-            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_valid,im))
+            shutil.copyfile(
+                os.path.join(path_glaucoma, im), os.path.join(path_glaucoma_valid, im)
+            )
 
 
 def cup_to_disc_ratio(model, file_path):
