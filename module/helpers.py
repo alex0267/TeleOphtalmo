@@ -43,7 +43,7 @@ class SaveBestModel(Recorder):
         self.save_method(last_metrics)
 
 
-def fmod(learn, list_images_paths, glaucoma_idx=0):
+def fmod(learn, list_images_paths, glaucoma_idx=0) -> Dict[str, float]:
     """
     fmod stands for: F_astai M_odel O_utput D_ictionary
 
