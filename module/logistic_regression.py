@@ -1,14 +1,14 @@
-import os
-from pathlib import Path
 import json
+import os
 import pickle
 from dataclasses import dataclass
+from pathlib import Path
+from typing import List
 
 import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
-from typing import List
 
 
 class Branch_dataset:
@@ -102,6 +102,7 @@ class Config:
         to save to if in train mode.
     :param IS_INFERENCE: is the model being used to infer or to train.
     """
+
     PATH_1_TRAIN: str = ""
     PATH_1_VAL: str = ""
     PATH_2_TRAIN: str = ""
@@ -226,5 +227,5 @@ class Model:
 
     def load_model(self):
         """Load the model from a file."""
-        file = open(self.config.MODEL_PATH, 'rb')
+        file = open(self.config.MODEL_PATH, "rb")
         self.model = pickle.load(file, encoding="ASCII")
