@@ -18,6 +18,20 @@ from sklearn.model_selection import train_test_split
 
 @dataclass
 class CroppedImageConfig:
+    """Configuration for the image cropper.
+
+    :param INPUT_PATH_GLAUCOMA: path to the folder containing the glaucoma
+        images
+    :param INPUT_PATH_HEALTHY: path to the folder containing the healthy
+        images
+    :param NAME_GLAUCOMA: base name for the cropped glaucoma images
+    :param NAME_HEALTHY: base name for the cropped healthy images
+    :param OUTPUT_PATH_GLAUCOMA: path to a folder to store the cropped
+        glaucoma images.
+    :param OUTPUT_PATH_HEALTHY: path to a folder to store the cropped
+        healthy images.
+    """
+
     INPUT_PATH_GLAUCOMA: str = ""
     INPUT_PATH_HEALTHY: str = ""
     NAME_GLAUCOMA: str = ""
@@ -28,8 +42,26 @@ class CroppedImageConfig:
 
 @dataclass
 class Config:
+    """MRCNN configuration to pass to the MRCNN model constructor.
+
+    :param IS_INFERENCE: is the model being used in inference mode
+    :param USE_GPU: should the GPU be used
+    :param DEBUG: if True, shorten train time (epochs etc)
+    :param WIDTH: input image width
+    :param NUM_CLASSES: number of classes to detect
+    :param MASK_PATHS: dictionary with keys being mask class names and
+        values being the path to the folder containing the mask files
+    :param MASK_COLOR: color of the masks in the mask files
+    :param IMAGE_PATH: path to the folder containing the input images
+        dataset.
+    :param WEIGHTS_PATH: path to the weights to load in inference mode
+    :param MODEL_DIR: path to the directory to save the models to
+        in train mode
+    :param LEARNING_RATE: learning rate
+    :param EPOCHS: number of epochs to train for
+    :param cropped_image: configuration for the images to crop"""
+
     IS_INFERENCE: bool = False
-    MODEL_PATH: str = ""
     USE_GPU: bool = True
     DEBUG: bool = True
     WIDTH: int = 1024
@@ -45,6 +77,9 @@ class Config:
 
 
 class MyMRCNNConfig(MRCNNConfig):
+    """Private MRCNN configuration. This class is not to be instanciated outside
+    of the MRCNN class."""
+
     # Give the configuration a recognizable name
     NAME = "Idrid"
 
@@ -71,6 +106,9 @@ class MyMRCNNConfig(MRCNNConfig):
     }
 
     def __init__(self, config: Config):
+        """Instantiates an MRCNN model configuration
+
+        :param config: model configuration."""
         self.STEPS_PER_EPOCH = 15 if config.DEBUG else 150
         self.VALIDATION_STEPS = 10 if config.DEBUG else 125
         self.IMAGE_MIN_DIM = config.WIDTH
@@ -82,6 +120,9 @@ class MyMRCNNConfig(MRCNNConfig):
 
 class Model:
     def __init__(self, config: Config):
+        """Instantiates an MRCNN model
+
+        :param config: model configuration."""
         self.config = config
         self.SHAPE = (config.WIDTH, config.WIDTH)
         self.mrcnn_config = MyMRCNNConfig(config)
@@ -107,6 +148,7 @@ class Model:
         return image_fps_train, image_fps_val, anns
 
     def init_dataset(self):
+        """Constructs the train and validation datasets"""
         image_fps_train, image_fps_val, self.image_annotations = self.split_dataframe()
         class_names = list(self.config.MASK_PATHS.keys())
         annotation_mask_names = list(self.config.MASK_PATHS.keys())
@@ -133,6 +175,8 @@ class Model:
         self.dataset_val.prepare()
 
     def init_model(self):
+        """Loads the model weights. In inference mode, the last layers are
+        excluded as transfer learning is performed."""
         os.makedirs(self.config.MODEL_DIR, exist_ok=True)
 
         self.model = modellib.MaskRCNN(
@@ -158,6 +202,8 @@ class Model:
             self.model.load_weights(self.config.WEIGHTS_PATH, by_name=True)
 
     def train(self):
+        """Starts training the model. It saves the trainning history in
+        `self.history` and saves the best model on disk."""
         self.model.train(
             self.dataset_train,
             self.dataset_val,
@@ -170,20 +216,25 @@ class Model:
         self.back_up_best_model()
 
     def get_best_epoch(self):
+        """Returns the best epoch and score based on the validation loss."""
         best_epoch = np.argmin(self.history["val_loss"])
         score = self.history["val_loss"][best_epoch]
         return best_epoch, score
 
     def get_best_model_path(self):
+        """Returns the path to the best model."""
         model_number = str(self.get_best_epoch()[0]).zfill(4)
         return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
 
     def back_up_best_model(self):
+        """Saves the best model. TODO explain model location"""
         best_model_path = Path(self.get_best_model_path())
         target_path = os.path.join(best_model_path.parent.parent, "best_model.h5")
         copyfile(best_model_path, target_path)
 
     def create_cropped_image(self):
+        """Crops the dataset images around the disc / cup region by using the
+        model's mask."""
         create_cropped_image(
             self.model,
             self.config.cropped_image.INPUT_PATH_HEALTHY,
@@ -199,7 +250,10 @@ class Model:
             self.SHAPE,
         )
 
-    def get_iou_score(self):
+    def get_iou_score(self) -> float:
+        """Calculates the average IOU score over the entire dataset
+
+        :return: iou score."""
         n_masks = len(self.config.MASK_PATHS)
         col_names = list(self.config.MASK_PATHS.keys())
         list_ious = mrcnn_iou_eval(
@@ -210,6 +264,15 @@ class Model:
         )
 
     def infer(self, img_path):
+        """Calculates the masks for a given image.
+
+        :param img_path: path to the image to calculate the masks for
+
+        :return: a list of dicts, one dict per image. The dict contains:
+            - rois: [N, (y1, x1, y2, x2)] detection bounding boxes
+            - class_ids: [N] int class IDs
+            - scores: [N] float probability scores for the class IDs
+            - masks: [H, W, N] instance binary masks"""
         img = imread(img_path)
         img_detect = img.copy()
         return self.model.detect([img_detect], verbose=1)
@@ -217,6 +280,13 @@ class Model:
     def export_dataset_output_dictionary(
         self, export_dir: str, train_paths: List[str], valid_paths: List[str]
     ):
+        """Exports two json files (for the trainning and validation sets)
+        containing a dictionary with keys being image paths and values being
+        the disc to cup ratio.
+
+        :param export_dir: directiory to write json files to
+        :param train_paths: a list of paths to the train images
+        :valid_paths: a list of paths to the validation images"""
         os.makedirs(export_dir, exist_ok=True)
 
         for data_files, filename in [

@@ -1,7 +1,7 @@
 import os
 import re
 import shutil
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -9,6 +9,7 @@ import pandas as pd
 from fastai.vision import MetricsList, Recorder, open_image
 from imgaug import augmenters as iaa
 from mrcnn import utils
+from mrcnn.model import MaskRCNN
 from skimage.io import imread
 
 COLORS = {
@@ -115,7 +116,9 @@ def resizeAndPad(img, size, padColor=0):
     return scaled_img
 
 
-def create_pathology_dataframe(image_path, mask_paths):
+def create_pathology_dataframe(
+    image_path: str, mask_paths: Dict[str, str]
+) -> pd.DataFrame:
     files_image = os.listdir(image_path)
     images = []
     for path in files_image:
@@ -129,7 +132,6 @@ def create_pathology_dataframe(image_path, mask_paths):
         lambda row: row.split(os.path.sep)[-1]
     )
 
-    masks = {}
     for mask_name, mask_path in mask_paths.items():
         files = os.listdir(mask_path)
         masks = []
@@ -220,7 +222,22 @@ def sorted_alphanumeric(data):
 
 
 # path folder for testing images
-def create_cropped_image(model, input_path, name_path, output_path, shape):
+def create_cropped_image(
+    model: MaskRCNN,
+    input_path: str,
+    name_path: str,
+    output_path: str,
+    shape: Tuple[int, int],
+) -> List[str]:
+    """Crops an input images using an MRCNN model.
+
+    :param model: the MRCNN model to be used when cropping
+    :param input_path: path to the folder containing the images to crop
+    :param name_path: base name for output file
+    :param output_path: path to the cropped image folder
+    :param shape: shape of the cropped image
+
+    :return: List of paths to the cropped images"""
     # Image augmentation (light but constant)
     aug_detect = iaa.Sequential([iaa.CLAHE()])
 
