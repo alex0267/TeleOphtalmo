@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
+from typing import List
 
 
 class Branch_dataset:
@@ -24,15 +25,21 @@ class Branch_dataset:
         index_y_test,
     ):
         """Creating a df from the dictionary output of each branch
-        branch_dic: the name of the dictionary
-        score_column: the name to give to the score column, has to be in a list
-        split_charac: the character to split the image name by to get image ID number
-        intext: True if the ID number is mixed with string characters
-        num_index: The index of the ID number after split
-        num_index2: If intext == True, where the ID number starts in the string. If intext is False put 0
-        len_test: True is a picture can be classified as glaucoma if the image name has a different number of part compared to healthy
-        test_for_y: What identify the image as glaucoma from its name
-        index_y_test: If len_test == False, the index of the string to verify, if len_test == True put 0"""
+
+        :param branch_dic: the name of the dictionary containing branch1 data
+        :param score_column: the name to give to the score column, has to be
+            in a list
+        :param split_charac: the character to split the image name by to get
+           image ID number
+        :param intext: True if the ID number is mixed with string characters
+        :param num_index: The index of the ID number after split
+        :param num_index2: If intext == True, where the ID number starts in the
+            string. If intext is False put 0
+        :param len_test: True is a picture can be classified as glaucoma if the
+            image name has a different number of part compared to healthy
+        :param test_for_y: What identify the image as glaucoma from its name
+        :param index_y_test: If len_test == False, the index of the string to
+            verify, if len_test == True put 0"""
 
         df = pd.DataFrame.from_dict(branch_dic, orient="index", columns=score_column)
         df.reset_index(level=0, inplace=True)
@@ -64,7 +71,7 @@ class Branch_dataset:
         self.df = df
 
     def merging_branches(self, branch2, branch3):
-
+        """Merges score dataframes from branch 2 and branch 3"""
         self.df = self.df.merge(
             branch2[["score2", "Img_number"]],
             how="left",
@@ -82,6 +89,19 @@ class Branch_dataset:
 
 @dataclass
 class Config:
+    """Configuration for the logistic regression model.
+
+    :param PATH_1_TRAIN: path to the branch 1 training dictionnary.
+    :param PATH_1_VAL: path to the branch 1 validation dictionnary.
+    :param PATH_2_TRAIN: path to the branch 2 training dictionnary.
+    :param PATH_2_VAL: path to the branch 2 validation dictionnary.
+    :param PATH_3_TRAIN: path to the branch 3 training dictionnary.
+    :param PATH_3_VAL: path to the branch 3 validation dictionnary.
+    :param N_BRANCHES: use 2 or 3 branches in the prediciton.
+    :param MODEL_PATH: path to the model to load if in inference mode or
+        to save to if in train mode.
+    :param IS_INFERENCE: is the model being used to infer or to train.
+    """
     PATH_1_TRAIN: str = ""
     PATH_1_VAL: str = ""
     PATH_2_TRAIN: str = ""
@@ -95,6 +115,9 @@ class Config:
 
 class Model:
     def __init__(self, config: Config):
+        """Instanciate the logistic regression model.
+
+        :param config: configuration to use."""
         self.config = config
 
         if self.config.IS_INFERENCE:
@@ -103,6 +126,12 @@ class Model:
             self.init_dataset()
 
     def init_dataset(self):
+        """Constructs the dataset using the output dictionary from:
+            - the two first branches if `config.N_BRANCHES == 2`
+            - the all three branches if `config.N_BRANCHES == 3`
+        This method sets two attributes that allow easy acces to the train
+        and validation datasets.
+        """
         self.load_all_json()
         branch1_train = Branch_dataset(
             self.branch1_dic, ["score1"], "_", True, 0, 2, True, 3, 0
@@ -137,13 +166,18 @@ class Model:
             self.multibranch_df = self.multibranch_df.dropna()
             self.multibranch_valid_df = self.multibranch_valid_df.dropna()
 
-    def get_dataset_col_names(self):
+    def get_dataset_col_names(self) -> List[str]:
+        """Returns the column names from the model input to be used when training
+        and scoring the model.
+
+        :returns: a list of column names"""
         if self.config.N_BRANCHES == 3:
             return ["score1", "score2", "score3"]
         else:
             return ["score1", "score2"]
 
     def train(self):
+        """Train the logistic regression."""
         cols = self.get_dataset_col_names()
 
         X = self.multibranch_df[cols]
@@ -155,6 +189,7 @@ class Model:
         self.export_model()
 
     def score(self):
+        """Score the logistic regression"""
         cols = self.get_dataset_col_names()
 
         X_val = self.multibranch_valid_df[cols]
@@ -163,6 +198,8 @@ class Model:
         return self.model.score(X_val, y_val)
 
     def load_all_json(self):
+        """Loads the train and validation output dictionaries from
+        all previous branches into attributes."""
         with open(self.config.PATH_1_TRAIN) as json_file:
             self.branch1_dic = json.load(json_file)
 
@@ -182,10 +219,12 @@ class Model:
             self.branch3_valid_dic = json.load(json_file)
 
     def export_model(self):
+        """Export the model to a file."""
         model_path = Path(self.config.MODEL_PATH)
         os.makedirs(model_path.parent, exist_ok=True)
         pickle.dump(self.model, open(self.config.MODEL_PATH, "wb"))
 
     def load_model(self):
+        """Load the model from a file."""
         file = open(self.config.MODEL_PATH, 'rb')
         self.model = pickle.load(file, encoding="ASCII")
