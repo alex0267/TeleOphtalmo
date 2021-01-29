@@ -189,8 +189,9 @@ class Model:
 
         self.export_model()
 
-    def score(self):
-        """Score the logistic regression"""
+    def score(self) -> float:
+        """Computes the accuracy metric of the logistic regression on
+        the validation set."""
         cols = self.get_dataset_col_names()
 
         X_val = self.multibranch_valid_df[cols]
