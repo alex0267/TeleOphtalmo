@@ -107,8 +107,8 @@ Please contact me via Slack or tbinetruy@wewyse.com if you run into touble ;)
   + [ ] score loaded model
 - master model
   + [x] train all models in a single method
-  + [ ] infer list of images
-  + [ ] score overall model
+  + [x] infer list of images
+  + [x] score overall model
 
 # Documentation
 
