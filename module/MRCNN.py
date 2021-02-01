@@ -157,7 +157,6 @@ class Model:
         self.dataset_train = DetectorDataset(
             image_fps_train,
             self.image_annotations,
-            self.config.IMAGE_PATH,
             self.SHAPE,
             class_names,
             annotation_mask_names,
@@ -168,7 +167,6 @@ class Model:
         self.dataset_val = DetectorDataset(
             image_fps_val,
             self.image_annotations,
-            self.config.IMAGE_PATH,
             self.SHAPE,
             class_names,
             annotation_mask_names,
