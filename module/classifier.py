@@ -1,17 +1,17 @@
 import glob
 import os
+import shutil
 from dataclasses import dataclass
 from shutil import copyfile
-import shutil
-import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
+from typing import List, Optional, Tuple
 
+import config
 import helpers
 import logistic_regression
 import MRCNN
 import resnet50
-import config
-from typing import Optional, Tuple, List
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
 
 HOME = "/home/jupyter"
 N_EPOCHS = 2
@@ -27,6 +27,7 @@ class Config:
     :param ratio: ratio configuration
     :param logreg_3b: 3 branch logistic regression configuration
     :param logreg_2b: 2 branch logistic regression configuration"""
+
     branch1: resnet50.Config
     branch2: resnet50.Config
     cropper: MRCNN.Config
@@ -44,6 +45,7 @@ class AverageClassificationScore:
     :param glaucoma: the average classification score over healthy glaucoma
     :param failed_images: list of path to images that could not be classified
     """
+
     healthy: float
     glaucoma: float
     failed_images: List[str]
@@ -86,7 +88,7 @@ class Model:
         """The branch1 model, used to classify the retina ORIGA raw images.
 
         :return: the branch1 model"""
-        if not hasattr(self, '_branch1'):
+        if not hasattr(self, "_branch1"):
             self._branch1 = resnet50.Model(self.config.branch1)
 
         return self._branch1
@@ -97,7 +99,7 @@ class Model:
         cropped around the cup.
 
         :return: the branch2 model"""
-        if not hasattr(self, '_branch2'):
+        if not hasattr(self, "_branch2"):
             self._branch2 = resnet50.Model(self.config.branch2)
 
         return self._branch2
@@ -107,7 +109,7 @@ class Model:
         """The model used to compute the disc/cup ratio on the ORIGA dataset.
 
         :return: the ratio model"""
-        if not hasattr(self, '_ratio'):
+        if not hasattr(self, "_ratio"):
             self._ratio = MRCNN.Model(self.config.ratio)
 
         return self._ratio
@@ -117,7 +119,7 @@ class Model:
         """The model used to crop ORIGA images around the cup.
 
         :return: the cropper model"""
-        if not hasattr(self, '_cropper'):
+        if not hasattr(self, "_cropper"):
             self._cropper = MRCNN.Model(self.config.cropper)
 
         return self._cropper
@@ -128,7 +130,7 @@ class Model:
         the branch1 and branch2 models.
 
         :return: the 2 branch logistic regression model"""
-        if not hasattr(self, '_logreg_2b'):
+        if not hasattr(self, "_logreg_2b"):
             self._logreg_2b = logistic_regression.Model(self.config.logreg_2b)
 
         return self._logreg_2b
@@ -139,7 +141,7 @@ class Model:
         the branch1 model, branch2 model and dics/cup ratio.
 
         :return: the 3 branch logistic regression model"""
-        if not hasattr(self, '_logreg_3b'):
+        if not hasattr(self, "_logreg_3b"):
             self._logreg_3b = logistic_regression.Model(self.config.logreg_3b)
 
         return self._logreg_3b
@@ -186,9 +188,9 @@ class Model:
 
     def train_logreg(self):
         """Train the logistic regressions using:
-            - case 1: only the classifications from the 2 branches.
-            - case 2: the classifications from the 2 branches as well as
-                      the disc/cup raio."""
+        - case 1: only the classifications from the 2 branches.
+        - case 2: the classifications from the 2 branches as well as
+                  the disc/cup raio."""
         self.logreg_2b.train()
         self.logreg_3b.train()
 
@@ -235,11 +237,17 @@ class Model:
             if success:
                 print("===> 3b")
                 X = [[results_branch1[2][0], results_branch2[2][0], ratio]]
-                return self.logreg_3b.model.predict(X), self.logreg_3b.model.predict_proba(X)
+                return (
+                    self.logreg_3b.model.predict(X),
+                    self.logreg_3b.model.predict_proba(X),
+                )
             else:
                 print("===> 2b")
                 X = [[results_branch1[2][0], results_branch2[2][0]]]
-                return self.logreg_2b.model.predict(X), self.logreg_2b.model.predict_proba(X)
+                return (
+                    self.logreg_2b.model.predict(X),
+                    self.logreg_2b.model.predict_proba(X),
+                )
         else:
             return None
 
@@ -261,7 +269,7 @@ class Model:
         scores_healthy: List[int] = []
         for file_name in path_healthy:
             print(scores_healthy)
-            if file_name == '.ipynb_checkpoints':
+            if file_name == ".ipynb_checkpoints":
                 continue
             else:
                 file_path = os.path.join(data_dir, "Healthy", file_name)
@@ -279,7 +287,7 @@ class Model:
         scores_glaucoma: List[int] = []
         for file_name in path_glaucoma:
             print(scores_glaucoma)
-            if file_name == '.ipynb_checkpoints':
+            if file_name == ".ipynb_checkpoints":
                 continue
             else:
                 file_path = os.path.join(data_dir, "Glaucoma", file_name)
