@@ -1,7 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import numpy as np
 from fastai.vision import (ClassificationInterpretation, ImageDataBunch, Path,
@@ -157,11 +157,11 @@ class Model:
         else:
             print("Please set the TRAIN_DATA_PATH_ROOT configuration attibute.")
 
-    def infer(self, img_path: str):
+    def infer(self, img_path: str) -> Tuple[int, int, List[float]]:
         """Calculates the glaucoma score for an input image.
 
         :param img_path: path to the image to calculate the glaucoma for
-        :return: the glaucoma score for the input image"""
+        :return: the predicted class, label and probabilities for `img_path`"""
         return self.learner.predict(open_image(img_path))
 
     def train(self):

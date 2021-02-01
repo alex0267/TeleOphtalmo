@@ -70,8 +70,10 @@ class Branch_dataset:
 
         self.df = df
 
-    def merging_branches(self, branch2, branch3):
-        """Merges score dataframes from branch 2 and branch 3"""
+    def merging_branches(self, branch2, branch3) -> pd.DataFrame:
+        """Merges score dataframes from branch 2 and branch 3.
+
+        :return: the dataframe containing all three branches"""
         self.df = self.df.merge(
             branch2[["score2", "Img_number"]],
             how="left",

@@ -3,10 +3,11 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import copyfile
-from typing import Dict, List
+from typing import Any, Dict, List, Tuple
 
 import mrcnn.model as modellib
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from helpers import (COLORS, DetectorDataset, create_cropped_image,
                      create_pathology_dataframe, mmod, mrcnn_iou_eval)
@@ -130,17 +131,18 @@ class Model:
             self.init_dataset()
         self.init_model()
 
-    def split_dataframe(self):
-        """Split dataframe 80/20 train/test"""
+    def split_dataframe(self) -> Tuple[List[str], List[str], pd.DataFrame]:
+        """Split dataframe 80/20 train/test.
+
+        :return: a tuple containing the list of file paths to the train
+           validation images as well as the dataframe containing their
+           labels."""
         anns = create_pathology_dataframe(
             self.config.IMAGE_PATH,
             self.config.MASK_PATHS,
         )
         train_names = anns.ID.unique().tolist()  # override with ships
 
-        test_size = (
-            self.mrcnn_config.VALIDATION_STEPS * self.mrcnn_config.IMAGES_PER_GPU
-        )
         image_fps_train, image_fps_val = train_test_split(
             train_names, test_size=0.2, random_state=42
         )
@@ -215,14 +217,18 @@ class Model:
         self.history = self.model.keras_model.history.history
         self.back_up_best_model()
 
-    def get_best_epoch(self):
-        """Returns the best epoch and score based on the validation loss."""
+    def get_best_epoch(self) -> Tuple[int, float]:
+        """Returns the best epoch and score based on the validation loss.
+
+        :return: a tuple containing the best epoch and its score."""
         best_epoch = np.argmin(self.history["val_loss"])
         score = self.history["val_loss"][best_epoch]
         return best_epoch, score
 
-    def get_best_model_path(self):
-        """Returns the path to the best model."""
+    def get_best_model_path(self) -> str:
+        """Get the path to the best model.
+
+        :return: the path to the best model."""
         model_number = str(self.get_best_epoch()[0]).zfill(4)
         return self.model.log_dir + f"/mask_rcnn_idrid_{model_number}.h5"
 
@@ -263,7 +269,7 @@ class Model:
             [len(list_iou) for list_iou in list_ious]
         )
 
-    def infer(self, img_path):
+    def infer(self, img_path) -> List[Dict[str, Any]]:
         """Calculates the masks for a given image.
 
         :param img_path: path to the image to calculate the masks for
