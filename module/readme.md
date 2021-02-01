@@ -109,3 +109,11 @@ Please contact me via Slack or tbinetruy@wewyse.com if you run into touble ;)
   + [x] train all models in a single method
   + [ ] infer list of images
   + [ ] score overall model
+
+# Documentation
+
+You can generate the documentation using Sphinx as follows:
+
+```sh
+cd docs && make html
+```
