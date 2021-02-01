@@ -1,7 +1,7 @@
 import os
 import re
 import shutil
-from typing import Any, Dict, List, Tuple, Optional, Union, Iterable
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -30,8 +30,8 @@ class SaveBestModel(Recorder):
         :param name: name of file to save."""
         super().__init__(learn)
         self.name = name
-        self.best_loss = 0.
-        self.best_acc = 0.
+        self.best_loss = 0.0
+        self.best_acc = 0.0
         self.save_method = self.save_when_acc
 
     def save_when_acc(self, metrics: Tuple[float, float]):
@@ -54,7 +54,9 @@ class SaveBestModel(Recorder):
         self.save_method(last_metrics)
 
 
-def fmod(learn: Learner, list_images_paths: List[str], glaucoma_idx: int = 0) -> Dict[str, float]:
+def fmod(
+    learn: Learner, list_images_paths: List[str], glaucoma_idx: int = 0
+) -> Dict[str, float]:
     """
     fmod stands for: F_astai M_odel O_utput D_ictionary.
 
@@ -75,7 +77,9 @@ def fmod(learn: Learner, list_images_paths: List[str], glaucoma_idx: int = 0) ->
     return result_dic
 
 
-def resizeAndPad(img: np.ndarray, size: Tuple[int, int], padColor: Union[int, Iterable[int]] = 0) -> np.ndarray:
+def resizeAndPad(
+    img: np.ndarray, size: Tuple[int, int], padColor: Union[int, Iterable[int]] = 0
+) -> np.ndarray:
     """Resize the image keeping the height proportional to the width.
 
     :param img: image to resize and pad as a Numpy array.
@@ -269,6 +273,7 @@ def sorted_alphanumeric(data: List[str]) -> List[str]:
 
     :param data: a list of alphanumeric strings.
     :return: `data` sorted."""
+
     def convert(text: str):
         return int(text) if text.isdigit() else text.lower()
 
@@ -352,9 +357,8 @@ MrcnnResultEntry = Dict[str, Any]
 
 
 def get_best_mrcnn_result_index_for_class(
-        mrcnn_result_entry: MrcnnResultEntry,
-        class_id: int
-        ) -> Optional[int]:
+    mrcnn_result_entry: MrcnnResultEntry, class_id: int
+) -> Optional[int]:
     """Given an mrcnn result entry.
 
     :return: the index of the best score for given class if 1 or more masks
@@ -374,11 +378,8 @@ def get_best_mrcnn_result_index_for_class(
 
 
 def mrcnn_iou_eval(
-        model: MaskRCNN,
-        anns: pd.DataFrame,
-        n_masks: int,
-        col_names: List[str]
-        ) -> List[List[float]]:
+    model: MaskRCNN, anns: pd.DataFrame, n_masks: int, col_names: List[str]
+) -> List[List[float]]:
     """
     Evaluation of the roi and masks provided by the mrcnn model
 
@@ -482,7 +483,9 @@ def train_valid_split(data_dir: str, healthy_name: str, glaucoma_name: str):
             )
 
 
-def cup_to_disc_ratio(model: MaskRCNN, file_path: str) -> Tuple[bool, Union[float, List[int]]]:
+def cup_to_disc_ratio(
+    model: MaskRCNN, file_path: str
+) -> Tuple[bool, Union[float, List[int]]]:
     """Calculates the cup/disc ratio for `file_path` using `model`.
 
     :param model: MaskRCNN model to use to calculate the masks.
@@ -540,7 +543,9 @@ def mmod(model: MaskRCNN, filenames: List[str]) -> Tuple[Dict[str, float], List[
     return result_dic, list_failed_images
 
 
-def mrcnn_b3_eval(model, anns, disc_annotation_colname, cup_annotation_colname) -> Tuple[pd.DataFrame, List[str]]:
+def mrcnn_b3_eval(
+    model, anns, disc_annotation_colname, cup_annotation_colname
+) -> Tuple[pd.DataFrame, List[str]]:
     """
     Evaluation of the mask provided by the mrcnn model
     by comparing the square error of the cup/disc ratio
