@@ -14,6 +14,11 @@ COPY requirements.txt .
 RUN python3.7 -m pip install --upgrade pip setuptools wheel
 RUN python3.7 -m pip install -r requirements.txt
 
+# Install MaskRCNN
+RUN apt-get install -y git
+RUN git clone https://www.github.com/matterport/Mask_RCNN.git
+RUN cd Mask_RCNN && python setup.py -q install
+
 # Install OpenCV deps
 RUN apt-get install ffmpeg libsm6 libxext6 -y
 
