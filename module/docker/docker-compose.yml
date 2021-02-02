@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   teleophtalmo:
+    ipc: host
     build:
       context: ../
       dockerfile: $PWD/docker/Dockerfile
