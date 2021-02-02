@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  teleophtalmo:
+    build:
+      context: ../
+      dockerfile: $PWD/docker/Dockerfile
+    volumes:
+      - $PWD/models:/app/models
+      - /home/jupyter/Data:/app/datasets/ORIGA
+      - /home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/:/app/datasets/ORIGA_cropped
+      - /home/jupyter/Second_branch/data_train_mrcnn/A.\ Segmentation/1.\ Original\ Images:/app/datasets/IDRID
+      - /home/jupyter/Third_branch/mask_for_maskrcnn/:/app/datasets/MAGRABIA
+      - /home/jupyter/All_final_models:/app/models/final
+    entrypoint: ls
