@@ -17,17 +17,17 @@ class Branch1:
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
                 FREEZE_TO=-2,
             ),
-            TRAIN_DATA_PATH_ROOT=f"{HOME}/Data/",
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch1",
+            TRAIN_DATA_PATH_ROOT="/app/datasets/ORIGA",
+            MODEL_DIR="/app/models/branch1",
             EPOCHS=N_EPOCHS,
         )
 
     def infer(self):
         config = self.train()
         config.IS_INFERENCE = True
-        config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid/Glaucoma"
+        config.INFERENCE_DATA_PATH_ROOT = "/app/datasets/ORIGA/valid/Glaucoma"
         if USE_PRODUCTION_MODEL:
-            config.MODEL_DIR = os.path.join(HOME, "All_final_models/1st_branch")
+            config.MODEL_DIR = "/app/models/final/1st_branch"
             config.MODEL_NAME = "export.pkl"
         else:
             config.MODEL_NAME = "best_model.pkl"
@@ -41,17 +41,17 @@ class Branch2:
                 FREEZE_TYPE=resnet50.freeze_type["FREEZE_TO"],
                 FREEZE_TO=-2,
             ),
-            TRAIN_DATA_PATH_ROOT="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/",
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2",
+            TRAIN_DATA_PATH_ROOT="/app/datasets/ORIGA_cropped",
+            MODEL_DIR="/app/models/branch2",
             EPOCHS=N_EPOCHS,
         )
 
     def infer(self):
         config = self.train()
-        config.INFERENCE_DATA_PATH_ROOT = "/home/jupyter/Data/valid"
+        config.INFERENCE_DATA_PATH_ROOT = "/app/datasets/ORIGA/valid"
         config.IS_INFERENCE = True
         if USE_PRODUCTION_MODEL:
-            config.MODEL_DIR = os.path.join(HOME, "All_final_models/2d_branch")
+            config.MODEL_DIR = "/app/models/final/2d_branch"
             config.MODEL_NAME = "export.pkl"
         else:
             config.MODEL_NAME = "best_model.pkl"
@@ -60,7 +60,7 @@ class Branch2:
 
 class LogReg:
     def train_3b(self):
-        HOME = "/home/thomas/TeleOphtalmo/module/"
+        HOME = "/app"
         return logistic_regression.Config(
             PATH_1_TRAIN=os.path.join(HOME, "output", "b1", "train_dic.json"),
             PATH_1_VAL=os.path.join(HOME, "output", "b1", "valid_dic.json"),
@@ -79,7 +79,7 @@ class LogReg:
         return config
 
     def train_2b(self):
-        HOME = "/home/thomas/TeleOphtalmo/module/"
+        HOME = "/app"
         config = self.train_3b()
         config.N_BRANCHES = 2
         config.MODEL_PATH = os.path.join(HOME, "models", "logreg", "classifier_2b.sav")
@@ -93,14 +93,14 @@ class LogReg:
 
 class Cropper:
     def train(self):
-        DATA_DIR = f"{HOME}/Second_branch/data_train_mrcnn/"
+        DATA_DIR = "/app/datasets/IDRID"
         cropped_image_config = MRCNN.CroppedImageConfig(
-            INPUT_PATH_GLAUCOMA="/home/jupyter/Data/Glaucoma/",
-            INPUT_PATH_HEALTHY="/home/jupyter/Data/Healthy/",
+            INPUT_PATH_GLAUCOMA="/app/datasets/ORIGA/Glaucoma/",
+            INPUT_PATH_HEALTHY="/app/datasets/ORIGA/Healthy/",
             NAME_GLAUCOMA="glaucoma",
             NAME_HEALTHY="healthy",
-            OUTPUT_PATH_GLAUCOMA="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/glaucoma/",
-            OUTPUT_PATH_HEALTHY="/home/thomas/TeleOphtalmo/module/output_MaskRcnn_ORIGA/healthy/",
+            OUTPUT_PATH_GLAUCOMA="/app/datasets/ORIGA_cropped/glaucoma/",
+            OUTPUT_PATH_HEALTHY="/app/datasets/ORIGA_cropped/healthy/",
         )
         return MRCNN.Config(
             IS_INFERENCE=False,
@@ -118,8 +118,8 @@ class Cropper:
             IMAGE_PATH=os.path.join(
                 DATA_DIR, "A. Segmentation/1. Original Images/a. Training Set/"
             ),
-            WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch2/",
+            WEIGHTS_PATH="/app/mask_rcnn_coco.h5",
+            MODEL_DIR="/app/models/branch2/",
             LEARNING_RATE=0.0001,
             EPOCHS=N_EPOCHS,
             cropped_image=cropped_image_config,
@@ -129,17 +129,15 @@ class Cropper:
         config = self.train()
         config.IS_INFERENCE=True
         if USE_PRODUCTION_MODEL:
-            config.WEIGHTS_PATH = os.path.join(HOME, "All_final_models/mrcnn_b2.h5")
+            config.WEIGHTS_PATH = "/app/models/final/mrcnn_b2.h5"
         else:
-            config.WEIGHTS_PATH = (
-                "/home/thomas/TeleOphtalmo/module/models/branch2/best_model.h5"
-            )
+            config.WEIGHTS_PATH = "/app/models/branch2/best_model.h5"
         return config
 
 
 class Ratio:
     def train(self):
-        DATA_DIR = f"{HOME}/Third_branch/mask_for_maskrcnn/"
+        DATA_DIR = "/app/datasets/MAGRABIA"
         return MRCNN.Config(
             IS_INFERENCE=False,
             USE_GPU=True,
@@ -158,8 +156,8 @@ class Ratio:
                 ),
             },
             IMAGE_PATH=os.path.join(DATA_DIR, "original"),
-            WEIGHTS_PATH=f"{HOME}/mask_rcnn_coco.h5",
-            MODEL_DIR="/home/thomas/TeleOphtalmo/module/models/branch3/",
+            WEIGHTS_PATH=f"/app/mask_rcnn_coco.h5",
+            MODEL_DIR="/app/models/branch3/",
             LEARNING_RATE=0.0001,
             EPOCHS=N_EPOCHS,
         )
@@ -168,9 +166,7 @@ class Ratio:
         config = self.train()
         config.IS_INFERENCE = True
         if USE_PRODUCTION_MODEL:
-            config.WEIGHTS_PATH = os.path.join(HOME, "All_final_models/mrcnn_b3.h5")
+            config.WEIGHTS_PATH = "/app/models/final/mrcnn_b3.h5"
         else:
-            config.WEIGHTS_PATH = (
-                "/home/thomas/TeleOphtalmo/module/models/branch3/best_model.h5"
-            )
+            config.WEIGHTS_PATH = "app/models/branch3/best_model.h5"
         return config

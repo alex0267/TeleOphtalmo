@@ -428,8 +428,8 @@ def train_valid_split(data_dir: str, healthy_name: str, glaucoma_name: str):
     """Split """
     # The list of Origa images in the train files
     # TODO remove hard coded file paths
-    list_healthy_train_1 = os.listdir("/home/jupyter/Data/train/Healthy")
-    list_glaucoma_train_1 = os.listdir("/home/jupyter/Data/train/Glaucoma")
+    list_healthy_train_1 = os.listdir("/app/datasets/ORIGA/train/Healthy")
+    list_glaucoma_train_1 = os.listdir("/app/datasets/ORIGA/train/Glaucoma")
 
     # The pictures ID of the images in the train files
     list_train_healthy = [int(pth.split("_")[0][3:]) for pth in list_healthy_train_1]

@@ -77,6 +77,20 @@ python
 >>> import MRCNN
 ```
 
+# Dockerized usage
+
+Building:
+
+```sh
+docker-compose -f ./docker/docker-compose.yml up --build
+```
+
+Running:
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo ls
+```
+
 # Troubleshooting
 
 Please contact me via Slack or tbinetruy@wewyse.com if you run into touble ;)

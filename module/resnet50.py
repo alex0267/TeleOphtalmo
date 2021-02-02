@@ -1,7 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import numpy as np
 from fastai.vision import (ClassificationInterpretation, ImageDataBunch, Path,
