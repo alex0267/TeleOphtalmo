@@ -1,9 +1,6 @@
 Welcome to TeleOphtalmo's documentation!
 ========================================
 
-.. automodule:: classifier
-    :members:
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
