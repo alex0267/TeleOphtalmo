@@ -130,7 +130,7 @@ docker-compose  -f ./docker/docker-compose.yml run teleophtalmo --service-ports 
 See the available commands:
 
 ```sh
-docker-compose  -f ./docker/docker-compose.yml run teleophtalmo --service-ports help
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo help
 ```
 
 # Troubleshooting
