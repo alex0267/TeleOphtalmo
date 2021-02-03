@@ -85,10 +85,52 @@ Building:
 docker-compose -f ./docker/docker-compose.yml up --build
 ```
 
-Running:
+Training the MRCNN models (feature engineering):
 
 ```sh
-docker-compose  -f ./docker/docker-compose.yml run teleophtalmo ls
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo train features
+```
+
+Export the dataset used to train branch 2 (/i.e./ the ORIGA dataset cropped around the cup):
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo export dataset branch2
+```
+
+Train both Resnet50 branches:
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo train branches
+```
+
+Export the datasets used to train the logistic regressions:
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo export dataset classifier
+```
+
+Train the logistic regressions:
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo train classifier
+```
+
+Score the classifier (on the ORIGA validation dataset by default):
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo score classifier
+```
+
+Spawn the Sphinx documentation at http://localhost:8000 (notice the necessary extra `--service-ports`):
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo --service-ports docs
+```
+
+See the available commands:
+
+```sh
+docker-compose  -f ./docker/docker-compose.yml run teleophtalmo --service-ports help
 ```
 
 # Troubleshooting
