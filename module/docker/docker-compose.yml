@@ -5,6 +5,8 @@ services:
     build:
       context: ../
       dockerfile: $PWD/docker/Dockerfile
+    ports:
+      - "8000:8000"
     volumes:
       - $PWD/models:/app/models
       - /home/jupyter/Data:/app/datasets/ORIGA
