@@ -50,6 +50,12 @@ class AverageClassificationScore:
     glaucoma: float
     failed_images: List[str]
 
+    def __str__(self):
+        return f"""
+        - healty: {self.healthy}
+        - glaucoma: {self.glaucoma}
+        - failed_images: {self.failed_images}"""
+
 
 train_config = Config(
     branch1=config.Branch1().train(),
@@ -251,7 +257,7 @@ class Model:
         else:
             return None
 
-    def score(self, data_dir="/home/jupyter/Data/valid/") -> AverageClassificationScore:
+    def score(self, data_dir="") -> AverageClassificationScore:
         """Score the classifier on all the retina images contained in an
         input folder.
 
@@ -259,6 +265,10 @@ class Model:
             score the classifier over.
         :return: the average classification score for healthy and glaucoma
             images."""
+        if data_dir == "":
+            # if data_dir is not set, use the ORIGA validation dataset
+            data_dir = os.path.join(self.config.branch2.INFERENCE_DATA_PATH_ROOT)
+
         path_healthy = os.listdir(os.path.join(data_dir, "Healthy"))
         path_glaucoma = os.listdir(os.path.join(data_dir, "Glaucoma"))
 

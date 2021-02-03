@@ -60,14 +60,14 @@ class Branch2:
 
 class LogReg:
     def train_3b(self):
-        HOME = "/app"
+        HOME = "/app/"
         return logistic_regression.Config(
-            PATH_1_TRAIN=os.path.join(HOME, "output", "b1", "train_dic.json"),
-            PATH_1_VAL=os.path.join(HOME, "output", "b1", "valid_dic.json"),
-            PATH_2_TRAIN=os.path.join(HOME, "output", "b2", "train_dic.json"),
-            PATH_2_VAL=os.path.join(HOME, "output", "b2", "valid_dic.json"),
-            PATH_3_TRAIN=os.path.join(HOME, "output", "b3", "train_dic.json"),
-            PATH_3_VAL=os.path.join(HOME, "output", "b3", "valid_dic.json"),
+            PATH_1_TRAIN=os.path.join(HOME, "datasets", "logistic_regression", "b1", "train_dic.json"),
+            PATH_1_VAL=os.path.join(HOME, "datasets", "logistic_regression", "b1", "valid_dic.json"),
+            PATH_2_TRAIN=os.path.join(HOME, "datasets", "logistic_regression", "b2", "train_dic.json"),
+            PATH_2_VAL=os.path.join(HOME, "datasets", "logistic_regression", "b2", "valid_dic.json"),
+            PATH_3_TRAIN=os.path.join(HOME, "datasets", "logistic_regression", "b3", "train_dic.json"),
+            PATH_3_VAL=os.path.join(HOME, "datasets", "logistic_regression", "b3", "valid_dic.json"),
             N_BRANCHES=3,
             MODEL_PATH=os.path.join(HOME, "models", "logreg", "classifier_3b.sav"),
             IS_INFERENCE=False,

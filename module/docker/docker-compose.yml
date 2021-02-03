@@ -12,3 +12,5 @@ services:
       - /home/jupyter/Second_branch/data_train_mrcnn/:/app/datasets/IDRID
       - /home/jupyter/Third_branch/mask_for_maskrcnn/:/app/datasets/MAGRABIA
       - /home/jupyter/All_final_models:/app/models/final
+      - /home/thomas/TeleOphtalmo/module/output:/app/datasets/logistic_regression
+      - /home/thomas/TeleOphtalmo/module/config.py:/app/config.py

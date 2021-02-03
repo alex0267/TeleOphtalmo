@@ -366,10 +366,10 @@ def get_best_mrcnn_result_index_for_class(
     best_index = None
     best_score = 0
     scores = mrcnn_result_entry.get("scores")
-    if scores:
+    if scores is not None:
         for i, score in enumerate(scores):
             class_ids = mrcnn_result_entry.get("class_ids")
-            if class_ids:
+            if class_ids is not None:
                 if class_ids[i] == class_id:
                     if score > best_score:
                         best_score = score
