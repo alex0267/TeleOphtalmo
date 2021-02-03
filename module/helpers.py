@@ -1,14 +1,16 @@
 import os
 import re
 import shutil
-from typing import Any
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 import pandas as pd
+from fastai.basic_train import Learner
 from fastai.vision import MetricsList, Recorder, open_image
 from imgaug import augmenters as iaa
 from mrcnn import utils
+from mrcnn.model import MaskRCNN
 from skimage.io import imread
 
 COLORS = {
@@ -19,16 +21,26 @@ COLORS = {
 
 
 class SaveBestModel(Recorder):
-    def __init__(self, learn, name="best_model"):
+    """Saves the best model based on scoring metric"""
+
+    def __init__(self, learn: Learner, name: str = "best_model"):
+        """Instanciates a `SaveBestModel` object.
+
+        :param learn: learner to save the best model for.
+        :param name: name of file to save."""
         super().__init__(learn)
         self.name = name
-        self.best_loss = None
-        self.best_acc = None
+        self.best_loss = 0.0
+        self.best_acc = 0.0
         self.save_method = self.save_when_acc
 
-    def save_when_acc(self, metrics):
+    def save_when_acc(self, metrics: Tuple[float, float]):
+        """Callback used after each epoch to save the model if it is the best.
+
+        :param metric: tuple containing the current loss as first element and
+            the current accuracy as second element."""
         loss, acc = metrics[0], metrics[1]
-        if self.best_acc is None or acc > self.best_acc:
+        if acc > self.best_acc:
             self.best_acc = acc
             self.best_loss = loss
             self.learn.export(f"{self.name}.pkl")
@@ -42,13 +54,18 @@ class SaveBestModel(Recorder):
         self.save_method(last_metrics)
 
 
-def fmod(learn, list_images_paths, glaucoma_idx=0):
+def fmod(
+    learn: Learner, list_images_paths: List[str], glaucoma_idx: int = 0
+) -> Dict[str, float]:
     """
-    fmod stands for: F_astai M_odel O_utput D_ictionary
+    fmod stands for: F_astai M_odel O_utput D_ictionary.
 
-    This function takes as its arguments a fastai model and a list of images path.
-    The function returns a dictionary with the images name as the key and the images
-    Glaucoma score as the associated value
+    :param learn: fast ai learner.
+    :param list_images_paths: list of image paths to include in the output
+        dictionary.
+    :param glaucoma_idx: glaucoma label.
+    :return: a dictionary with the images name as the key and the images
+        glaucoma score as the associated value.
     """
     result_dic = {}
     for path in list_images_paths:
@@ -60,8 +77,15 @@ def fmod(learn, list_images_paths, glaucoma_idx=0):
     return result_dic
 
 
-def resizeAndPad(img, size, padColor=0):
-    """Resize the image keeping the height proportional to the width."""
+def resizeAndPad(
+    img: np.ndarray, size: Tuple[int, int], padColor: Union[int, Iterable[int]] = 0
+) -> np.ndarray:
+    """Resize the image keeping the height proportional to the width.
+
+    :param img: image to resize and pad as a Numpy array.
+    :param size: size of resized image.
+    :param padColor: color used for padded pixels.
+    :return: resized image."""
     h, w = img.shape[:2]
     sh, sw = size
 
@@ -93,9 +117,8 @@ def resizeAndPad(img, size, padColor=0):
         pad_left, pad_right = 0, 0
 
     # set pad color
-    if len(img.shape) == 3 and not isinstance(
-        padColor, (list, tuple, np.ndarray)
-    ):  # color image but only one color provided
+    if len(img.shape) == 3 and isinstance(padColor, int):
+        # color image but only one color provided
         padColor = [padColor] * 3
 
     # scale and padBORDER_CONSTANT, value=padColor)
@@ -115,7 +138,16 @@ def resizeAndPad(img, size, padColor=0):
     return scaled_img
 
 
-def create_pathology_dataframe(image_path, mask_paths):
+def create_pathology_dataframe(
+    image_path: str, mask_paths: Dict[str, str]
+) -> pd.DataFrame:
+    """Creates a dataframe mapping image paths to masks.
+
+    :param image_path: path to the directory containing the images
+        to include in the dataframe.
+    :param mask_paths: a dictionnary mapping mask names to directories
+        containing the mask files.
+    :return: a dataframe mapping image paths to their masks."""
     files_image = os.listdir(image_path)
     images = []
     for path in files_image:
@@ -129,7 +161,6 @@ def create_pathology_dataframe(image_path, mask_paths):
         lambda row: row.split(os.path.sep)[-1]
     )
 
-    masks = {}
     for mask_name, mask_path in mask_paths.items():
         files = os.listdir(mask_path)
         masks = []
@@ -149,14 +180,21 @@ class DetectorDataset(utils.Dataset):
 
     def __init__(
         self,
-        image_fps,
-        image_annotations,
-        image_path,
-        shape,
-        class_names,
-        annotation_mask_names,
-        mask_color,
+        image_fps: List[str],
+        image_annotations: pd.DataFrame,
+        shape: Tuple[int, int],
+        class_names: List[str],
+        annotation_mask_names: List[str],
+        mask_color: str,
     ):
+        """Instanciate a detector dataset object.
+
+        :param image_fps: list of image file paths to include in the dataset.
+        :param image_annotations: dataframe mapping image paths to masks.
+        :param shape: shape of images.
+        :param class_names: list of all class names in the dataset.
+        :param annotation_mask_names: list of all mask names in the dataset.
+        :param mask_color: color of the mask in the mask images."""
         super().__init__(self)
 
         self.shape = shape
@@ -184,11 +222,20 @@ class DetectorDataset(utils.Dataset):
                 orig_height=shape[1],
             )
 
-    def image_reference(self, image_id):
+    def image_reference(self, image_id) -> str:
+        """Return a link to the image in its source Website or details about
+        the image that help looking it up or debugging it.
+
+        :param image_id: id of image to return a reference for.
+        :return: the path to `image_id`."""
         info = self.image_info[image_id]
         return info["path"]
 
-    def load_image(self, image_id):
+    def load_image(self, image_id) -> np.ndarray:
+        """Load the specified image.
+
+        :param image_id: id of the image to load.
+        :return: a [H,W,3] Numpy array."""
         info = self.image_info[image_id]
         fp = info["path"]
         image = imread(fp)
@@ -198,7 +245,15 @@ class DetectorDataset(utils.Dataset):
             image = np.stack((image,) * 3, -1)
         return image
 
-    def load_mask(self, image_id):
+    def load_mask(self, image_id) -> Tuple[List[bool], List[str]]:
+        """Load instance masks for the given image.
+
+        :param image_id: id of the image to load the masks for.
+        :return: a tuple with:
+            - a bool array of shape [height, width, instance count] with
+              a binary mask per instance as first element
+            - a 1D array of class IDs of the instance masks as second element.
+        """
         n_classes = len(self.annotation_mask_names)
         masks = np.zeros((self.shape[0], self.shape[1], n_classes))
         for i in range(0, n_classes):
@@ -213,14 +268,38 @@ class DetectorDataset(utils.Dataset):
         return (masks, class_ids)
 
 
-def sorted_alphanumeric(data):
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
+def sorted_alphanumeric(data: List[str]) -> List[str]:
+    """Sort a list of alphanumeric strings.
+
+    :param data: a list of alphanumeric strings.
+    :return: `data` sorted."""
+
+    def convert(text: str):
+        return int(text) if text.isdigit() else text.lower()
+
+    def alphanum_key(key: str):
+        return [convert(c) for c in re.split("([0-9]+)", key)]
+
     return sorted(data, key=alphanum_key)
 
 
 # path folder for testing images
-def create_cropped_image(model, input_path, name_path, output_path, shape):
+def create_cropped_image(
+    model: MaskRCNN,
+    input_path: str,
+    name_path: str,
+    output_path: str,
+    shape: Tuple[int, int],
+) -> List[str]:
+    """Crops an input images using an MRCNN model.
+
+    :param model: the MRCNN model to be used when cropping
+    :param input_path: path to the folder containing the images to crop
+    :param name_path: base name for output file
+    :param output_path: path to the cropped image folder
+    :param shape: shape of the cropped image
+
+    :return: List of paths to the cropped images"""
     # Image augmentation (light but constant)
     aug_detect = iaa.Sequential([iaa.CLAHE()])
 
@@ -254,7 +333,9 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
             roi = img[y:h, x:w, :]
             roi_resized = resizeAndPad(roi, shape)
             i = int(name.split("_")[0][2:6])
-            target_path = os.path.join(output_path, name_path + "_roi_resized_{0}.png".format(i))
+            target_path = os.path.join(
+                output_path, name_path + "_roi_resized_{0}.png".format(i)
+            )
             cropped_image_paths.append(target_path)
             cv2.imwrite(
                 target_path,
@@ -272,32 +353,45 @@ def create_cropped_image(model, input_path, name_path, output_path, shape):
     return cropped_image_paths
 
 
-def get_best_mrcnn_result_index_for_class(mrcnn_result_entry, class_id):
-    """given an mrcnn result entry, returns the index of the best score for
-    given class."""
+MrcnnResultEntry = Dict[str, Any]
+
+
+def get_best_mrcnn_result_index_for_class(
+    mrcnn_result_entry: MrcnnResultEntry, class_id: int
+) -> Optional[int]:
+    """Given an mrcnn result entry.
+
+    :return: the index of the best score for given class if 1 or more masks
+        were detected and `None` otherwise."""
     best_index = None
     best_score = 0
-    for i, score in enumerate(mrcnn_result_entry.get("scores")):
-        if mrcnn_result_entry.get("class_ids")[i] == class_id:
-            if score > best_score:
-                best_score = score
-                best_index = i
+    scores = mrcnn_result_entry.get("scores")
+    if scores is not None:
+        for i, score in enumerate(scores):
+            class_ids = mrcnn_result_entry.get("class_ids")
+            if class_ids is not None:
+                if class_ids[i] == class_id:
+                    if score > best_score:
+                        best_score = score
+                        best_index = i
     return best_index
 
 
-def mrcnn_iou_eval(model, anns, n_masks, col_names):
+def mrcnn_iou_eval(
+    model: MaskRCNN, anns: pd.DataFrame, n_masks: int, col_names: List[str]
+) -> List[List[float]]:
     """
     Evaluation of the roi and masks provided by the mrcnn model
 
-    model: the model we want to evaluate
-    anns: a dataframe with the filepaths of the evaluation images and masks.
+    :param model: the model we want to evaluate
+    :param anns: a dataframe with the filepaths of the evaluation images and
+        masks.
+    :param n_masks: number of masks
+    :param col_names: name of the mask annotation columns
 
-    The output is:
-    list_iou: a list of iou values
-    n_masks: (int) number of masks
-    col_names: (list(string)) name of the mask annotation columns
+    :return: a list of iou values
     """
-    spec = [([], col_names[i]) for i in range(n_masks)]
+    spec: List[Tuple[List[float], str]] = [([], col_names[i]) for i in range(n_masks)]
     for idx in range(len(anns)):
         path = anns.loc[idx, "Paths"]
         img = imread(path)
@@ -330,10 +424,12 @@ def mrcnn_iou_eval(model, anns, n_masks, col_names):
     return [spec_entry[0] for spec_entry in spec]
 
 
-def train_valid_split(data_dir, healthy_name, glaucoma_name):
+def train_valid_split(data_dir: str, healthy_name: str, glaucoma_name: str):
+    """Split """
     # The list of Origa images in the train files
-    list_healthy_train_1 = os.listdir("/home/jupyter/Data/train/Healthy")
-    list_glaucoma_train_1 = os.listdir("/home/jupyter/Data/train/Glaucoma")
+    # TODO remove hard coded file paths
+    list_healthy_train_1 = os.listdir("/app/datasets/ORIGA/train/Healthy")
+    list_glaucoma_train_1 = os.listdir("/app/datasets/ORIGA/train/Glaucoma")
 
     # The pictures ID of the images in the train files
     list_train_healthy = [int(pth.split("_")[0][3:]) for pth in list_healthy_train_1]
@@ -357,9 +453,13 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
     for im in list_healthy_2:
         im_index = int(im.split("_")[3][:-4])
         if im_index in list_train_healthy:
-            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_train,im))
+            shutil.copyfile(
+                os.path.join(path_healthy, im), os.path.join(path_healthy_train, im)
+            )
         else:
-            shutil.copyfile(os.path.join(path_healthy,im), os.path.join(path_healthy_valid,im))
+            shutil.copyfile(
+                os.path.join(path_healthy, im), os.path.join(path_healthy_valid, im)
+            )
 
     path_glaucoma = os.path.join(data_dir, glaucoma_name)
     path_glaucoma_train = os.path.join(data_dir, "train", glaucoma_name)
@@ -374,12 +474,28 @@ def train_valid_split(data_dir, healthy_name, glaucoma_name):
     for im in list_glaucoma_2:
         im_index = int(im.split("_")[3][:-4])
         if im_index in list_train_glaucoma:
-            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_train,im))
+            shutil.copyfile(
+                os.path.join(path_glaucoma, im), os.path.join(path_glaucoma_train, im)
+            )
         else:
-            shutil.copyfile(os.path.join(path_glaucoma,im), os.path.join(path_glaucoma_valid,im))
+            shutil.copyfile(
+                os.path.join(path_glaucoma, im), os.path.join(path_glaucoma_valid, im)
+            )
 
 
-def cup_to_disc_ratio(model, file_path):
+def cup_to_disc_ratio(
+    model: MaskRCNN, file_path: str
+) -> Tuple[bool, Union[float, List[int]]]:
+    """Calculates the cup/disc ratio for `file_path` using `model`.
+
+    :param model: MaskRCNN model to use to calculate the masks.
+    :param file_path: path to file to calculate ratio for.
+    :return: a tuple with a boolean as first element set to `True` if the
+        ratio could be calculated and `False` otherwise. The tuple's second
+        element is the ratio if it could be calculated or a list of class ids
+        that were found by the model if the ratio could not be calculated.
+        this allows to see which mask could not be found (disc, cup or both)
+        and prevented the ratio calculation."""
     img = imread(file_path)
     img_detect = img.copy()
     results = model.detect([img_detect], verbose=1)
@@ -389,28 +505,29 @@ def cup_to_disc_ratio(model, file_path):
     if len(np.unique(r.get("class_ids"))) == 2:
         best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
         best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
-        disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
-        cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+        disc_pixel_sum = r.get("masks")[:, :, best_disc_index].sum()
+        cup_pixel_sum = r.get("masks")[:, :, best_cup_index].sum()
         return True, cup_pixel_sum / disc_pixel_sum
     else:
         return False, r.get("class_ids")
 
 
-def mmod(model, filenames):
-    """
-    fmod stands for: M_askRcnn M_odel O_utput D_ictionary
+def mmod(model: MaskRCNN, filenames: List[str]) -> Tuple[Dict[str, float], List[str]]:
+    """fmod stands for: M_askRcnn M_odel O_utput D_ictionary
 
-    This function takes as its arguments a maskrcnn model and a list of images path.
-    The function returns a dictionary with the images name as the key and the ratio of
-    cup to disc as the associated value
-    """
-    result_dic = {}
+    :param model: model to be used to calculate the masks.
+    :param filenames: list of path to images to calculate masks for.
+    :return: a tuple with the first element being a dictionary with the images
+        name as the key and the ratio of cup to disc as the associated value
+        The second element being a list of images name the cup/disc ratio could
+        not be calculated for."""
+    result_dic: Dict[str, float] = {}
     list_failed_images = []
     for path in filenames:
         result = cup_to_disc_ratio(model, path)
 
         # Checking if both disc and cup where found
-        if result[0]:
+        if isinstance(result[1], float):
             ratio = result[1]
             img_name = path.split(".")[0].split("/")[-1]
             result_dic[img_name] = ratio
@@ -426,18 +543,26 @@ def mmod(model, filenames):
     return result_dic, list_failed_images
 
 
-def mrcnn_b3_eval(model, anns, disc_annotation_colname, cup_annotation_colname):
+def mrcnn_b3_eval(
+    model, anns, disc_annotation_colname, cup_annotation_colname
+) -> Tuple[pd.DataFrame, List[str]]:
     """
     Evaluation of the mask provided by the mrcnn model
     by comparing the square error of the cup/disc ratio
     of the annotated images compared to the infered masks.
 
-    model: the model we want to evaluate
-    anns: a dataframe with the filepaths of the evaluation images and masks.
+    :param model: the model we want to evaluate
+    :param anns: a dataframe with the filepaths of the evaluation images and
+        masks.
+    :param disc_annotation_colname: column name in `anns` that contains the
+        disc masks.
+    :param cup_annotation_colname: column name in `anns` that contains the
+        cup masks.
 
-    The output of the function are:
-    df: a dataframe with the error between the ratio
-    list_failed_images: a list of images where the model couldn't find a disc and a cup
+    :return: a tuple with:
+        - first element: df: a dataframe with the error between the ratio
+        - second element: list_failed_images: a list of images where the model
+            couldn't find a disc and a cup
     """
     df = pd.DataFrame(columns=["ID", "ann", "inf", "err"])
     list_failed_images = []
@@ -453,19 +578,19 @@ def mrcnn_b3_eval(model, anns, disc_annotation_colname, cup_annotation_colname):
         if len(np.unique(r.get("class_ids"))) == 2:
             best_disc_index = get_best_mrcnn_result_index_for_class(r, 1)
             best_cup_index = get_best_mrcnn_result_index_for_class(r, 2)
-            disc_pixel_sum = sum(sum(r.get("masks")[:, :, best_disc_index]))
-            cup_pixel_sum = sum(sum(r.get("masks")[:, :, best_cup_index]))
+            disc_pixel_sum = r.get("masks")[:, :, best_disc_index].sum()
+            cup_pixel_sum = r.get("masks")[:, :, best_cup_index].sum()
             ratio = cup_pixel_sum / disc_pixel_sum
             temp_dic["ID"] = anns.loc[idx, "ID"]
             temp_dic["inf"] = ratio
 
             mask_disc_org = imread(anns.loc[idx, disc_annotation_colname])
             mask_disc_org = np.where(mask_disc_org > 0, 1, 0)
-            disc_pixel_sum_org = sum(sum(mask_disc_org[:, :, 0]))
+            disc_pixel_sum_org = mask_disc_org[:, :, 0].sum()
 
             mask_cup_org = imread(anns.loc[idx, cup_annotation_colname])
             mask_cup_org = np.where(mask_cup_org > 0, 1, 0)
-            cup_pixel_sum_org = sum(sum(mask_cup_org[:, :, 0]))
+            cup_pixel_sum_org = mask_cup_org[:, :, 0].sum()
 
             ratio_org = cup_pixel_sum_org / disc_pixel_sum_org
 
